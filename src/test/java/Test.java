@@ -18,7 +18,6 @@ public class Test {
             vsonObject.comment("name", VsonComment.BEHIND_VALUE, "Das ist der Name der Person");
             vsonObject.comment("alter", VsonComment.UNDER_VALUE, "Das ist das Alter der Person");
             vsonObject.comment("volljährig", VsonComment.MULTI_LINE, "Das ist die Volljährigkeit", "Diese ist 'true', wenn die Person", "18 Jahre oder älter ist");
-
             vsonObject.save();
         } catch (IOException e) {
             e.printStackTrace();

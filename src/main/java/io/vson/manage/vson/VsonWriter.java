@@ -1,4 +1,3 @@
-
 package io.vson.manage.vson;
 
 import io.vson.VsonValue;
@@ -24,9 +23,9 @@ public class VsonWriter {
 
     public VsonWriter(TempVsonOptions options) {
         if (options!=null) {
-            dsfProviders=options.getDsfProviders();
+            this.dsfProviders = options.getDsfProviders();
         } else {
-            dsfProviders=new IVsonProvider[0];
+            dsfProviders = new IVsonProvider[0];
         }
     }
 
@@ -36,42 +35,34 @@ public class VsonWriter {
     }
 
     public void save(VsonObject parent, VsonValue value, Writer tw, int level, VsonMember member, String separator, boolean noIndent) throws IOException {
-        if (value == null) {
+        if (value==null) {
             tw.write(separator);
             tw.write("null");
             return;
         }
 
         String dsfValue= Dsf.stringify(dsfProviders, value);
-        if (dsfValue != null) {
+        if (dsfValue!=null) {
             tw.write(separator);
             tw.write(dsfValue);
             return;
         }
 
-        Pair<String[], VsonComment> comment = comment(parent, tw, member);
+        Pair<String[], VsonComment> comment = comment(parent, member);
         switch (value.getType()) {
             case OBJECT:
-                VsonObject obj = value.asVsonObject();
-                if (!noIndent) {
-                    if (obj.size() > 0) {
-                        this.nl(tw, level);
-                    } else {
-                        tw.write(separator);
-                    }
-                }
-
+                VsonObject obj= value.asVsonObject();
+                if (!noIndent) { if (obj.size()>0) nl(tw, level); else tw.write(separator); }
                 tw.write('{');
+
                 for (VsonMember pair : obj) {
-                    this.nl(tw, level+1);
+                    nl(tw, level+1);
                     tw.write(escapeName(pair.getName()));
                     tw.write(":");
-                    this.save(obj, pair.getValue(), tw, level, pair, " ", false);
+                    save(obj, pair.getValue(), tw, level+1, pair," ", false);
                 }
 
-                if (obj.size() > 0) {
-                    this.nl(tw, level);
-                }
+                if (obj.size()>0) nl(tw, level);
                 tw.write('}');
                 break;
             case ARRAY:
@@ -161,7 +152,9 @@ public class VsonWriter {
         }
     }
 
-    public Pair<String[], VsonComment> comment(VsonObject parent, Writer tw, VsonMember member) {
+
+
+    public Pair<String[], VsonComment> comment(VsonObject parent, VsonMember member) {
         if (member != null && parent != null && parent.getComments() != null) {
             int level = parent.indexOf(member.getName());
             if (parent.getComments().get(level) == null || parent.getComments().get(level).getValue() == null) {
@@ -171,6 +164,7 @@ public class VsonWriter {
         }
         return null;
     }
+
 
     public static String escapeName(String name) {
         if (name.length()==0 || needsEscapeName.matcher(name).find())
@@ -209,7 +203,7 @@ public class VsonWriter {
                 else if (!VsonParser.isWhiteSpace(ch)) allWhite=false;
             }
             if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level, separator);
-            else tw.write(separator+"\""+ JsonWriter.escapeString(value)+"\"");
+            else tw.write(separator+"\""+JsonWriter.escapeString(value)+"\"");
         }
         else tw.write(separator+value);
     }

@@ -158,6 +158,16 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         return this;
     }
 
+    public VsonObject append(String name, List<?> value) {
+        VsonArray vsonArray = new VsonArray();
+        for (Object o : value) {
+            vsonArray.submit(o);
+        }
+        this.append(name, vsonArray);
+        return this;
+    }
+
+
     public VsonObject set(String name, int value) {
         set(name, valueOf(value));
         return this;
