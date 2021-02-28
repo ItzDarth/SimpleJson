@@ -132,7 +132,7 @@ public abstract class VsonValue implements Serializable {
         switch (format) {
             case RAW_JSON: new JsonWriter(false).save(this, buffer, 0); break;
             case JSON: new JsonWriter(true).save(this, buffer, 0); break;
-            case VSON: new VsonWriter(null).save(this, buffer, 0, "", true); break;
+            case VSON: new VsonWriter(null).save(null, this, buffer, 0, null, "", true); break;
         }
         buffer.flush();
     }
@@ -140,7 +140,7 @@ public abstract class VsonValue implements Serializable {
     public void writeTo(Writer writer, TempVsonOptions options) throws IOException {
         if (options==null) throw new NullPointerException("options is null");
         WritingBuffer buffer=new WritingBuffer(writer, 128);
-        new VsonWriter(options).save(this, buffer, 0, "", true);
+        new VsonWriter(options).save(null, this, buffer, 0, null, "", true);
         buffer.flush();
     }
 

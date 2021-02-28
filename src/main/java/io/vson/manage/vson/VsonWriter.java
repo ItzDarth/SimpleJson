@@ -5,10 +5,12 @@ import io.vson.VsonValue;
 import io.vson.elements.VsonArray;
 import io.vson.elements.object.VsonMember;
 import io.vson.elements.object.VsonObject;
-import io.vson.elements.other.HjsonDsf;
+import io.vson.elements.other.Dsf;
+import io.vson.enums.VsonComment;
 import io.vson.manage.json.JsonWriter;
 import io.vson.other.IVsonProvider;
 import io.vson.other.TempVsonOptions;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -33,34 +35,43 @@ public class VsonWriter {
         for (int i=0; i<level; i++) tw.write("  ");
     }
 
-    public void save(VsonValue value, Writer tw, int level, String separator, boolean noIndent) throws IOException {
-        if (value==null) {
+    public void save(VsonObject parent, VsonValue value, Writer tw, int level, VsonMember member, String separator, boolean noIndent) throws IOException {
+        if (value == null) {
             tw.write(separator);
             tw.write("null");
             return;
         }
 
-        String dsfValue= HjsonDsf.stringify(dsfProviders, value);
-        if (dsfValue!=null) {
+        String dsfValue= Dsf.stringify(dsfProviders, value);
+        if (dsfValue != null) {
             tw.write(separator);
             tw.write(dsfValue);
             return;
         }
 
+        Pair<String[], VsonComment> comment = comment(parent, tw, member);
         switch (value.getType()) {
             case OBJECT:
-                VsonObject obj=value.asVsonObject();
-                if (!noIndent) { if (obj.size()>0) nl(tw, level); else tw.write(separator); }
-                tw.write('{');
-
-                for (VsonMember pair : obj) {
-                    nl(tw, level+1);
-                    tw.write(escapeName(pair.getName()));
-                    tw.write(":");
-                    save(pair.getValue(), tw, level+1, " ", false);
+                VsonObject obj = value.asVsonObject();
+                if (!noIndent) {
+                    if (obj.size() > 0) {
+                        this.nl(tw, level);
+                    } else {
+                        tw.write(separator);
+                    }
                 }
 
-                if (obj.size()>0) nl(tw, level);
+                tw.write('{');
+                for (VsonMember pair : obj) {
+                    this.nl(tw, level+1);
+                    tw.write(escapeName(pair.getName()));
+                    tw.write(":");
+                    this.save(obj, pair.getValue(), tw, level, pair, " ", false);
+                }
+
+                if (obj.size() > 0) {
+                    this.nl(tw, level);
+                }
                 tw.write('}');
                 break;
             case ARRAY:
@@ -70,23 +81,95 @@ public class VsonWriter {
                 tw.write('[');
                 for (int i=0; i<n; i++) {
                     nl(tw, level+1);
-                    save(arr.get(i), tw, level+1, "", true);
+                    save(parent, arr.get(i), tw, level+1, member, "", true);
                 }
                 if (n>0) nl(tw, level);
                 tw.write(']');
                 break;
             case BOOLEAN:
                 tw.write(separator);
-                tw.write(value.isTrue()?"true":"false");
+                String val = value.isTrue() ? "true" : "false";
+                if (comment != null) {
+                    if (comment.getValue().equals(VsonComment.BEHIND_VALUE)) {
+                        tw.write(val + " //" + comment.getKey()[0]);
+                        break;
+                    } else if (comment.getValue().equals(VsonComment.UNDER_VALUE)) {
+                        tw.write(val);
+                        tw.write("\n");
+                        tw.write("  //" + comment.getKey()[0]);
+                        break;
+                    } else if (comment.getValue().equals(VsonComment.MULTI_LINE)) {
+                        tw.write(val);
+                        tw.write("  \n");
+                        tw.write("  /*\n");
+                        for (String s : comment.getKey()) {
+                            tw.write("     " + s + "\n");
+                        }
+                        tw.write("  */");
+                        break;
+                    }
+                }
+                tw.write(val);
                 break;
             case STRING:
-                writeString(value.asString(), tw, level, separator);
+                if (comment != null) {
+                    if (comment.getValue().equals(VsonComment.BEHIND_VALUE)) {
+                        writeString(value.asString() + " //" + comment.getKey()[0], tw, level, separator);
+                        break;
+                    } else if (comment.getValue().equals(VsonComment.UNDER_VALUE)) {
+                        writeString(value.asString(), tw, level, separator);
+                        tw.write("\n");
+                        tw.write("  //" + comment.getKey()[0]);
+                        break;
+                    } else if (comment.getValue().equals(VsonComment.MULTI_LINE)) {
+                        writeString(value.asString() , tw, level, separator);
+                        tw.write("  \n");
+                        tw.write("  /*\n");
+                        for (String s : comment.getKey()) {
+                            tw.write("     " + s + "\n");
+                        }
+                        tw.write("  */");
+                        break;
+                    }
+                }
+                writeString(value.asString() , tw, level, separator);
                 break;
             default:
                 tw.write(separator);
+                if (comment != null) {
+                    if (comment.getValue().equals(VsonComment.BEHIND_VALUE)) {
+                        tw.write(value.toString()  + " //" + comment.getKey()[0]);
+                        break;
+                    } else if (comment.getValue().equals(VsonComment.UNDER_VALUE)) {
+                        tw.write(value.toString());
+                        tw.write("\n");
+                        tw.write("  //" + comment.getKey()[0]);
+                        break;
+                    } else if (comment.getValue().equals(VsonComment.MULTI_LINE)) {
+                        tw.write(value.toString());
+                        tw.write("  \n");
+                        tw.write("  /*\n");
+                        for (String s : comment.getKey()) {
+                            tw.write("     " + s + "\n");
+                        }
+                        tw.write("  */");
+                        break;
+                    }
+                }
                 tw.write(value.toString());
                 break;
         }
+    }
+
+    public Pair<String[], VsonComment> comment(VsonObject parent, Writer tw, VsonMember member) {
+        if (member != null && parent != null && parent.getComments() != null) {
+            int level = parent.indexOf(member.getName());
+            if (parent.getComments().get(level) == null || parent.getComments().get(level).getValue() == null) {
+                return null;
+            }
+            return parent.getComments().get(level);
+        }
+        return null;
     }
 
     public static String escapeName(String name) {

@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="vson-1.0-final">
+    <output-path>$PROJECT_DIR$/../../dependencies</output-path>
+    <root id="archive" name="vson-1.0-final.jar">
+      <element id="module-output" name="Vson" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/code/gson/gson/2.8.6/gson-2.8.6.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>

@@ -7,7 +7,7 @@ import io.vson.elements.VsonLiteral;
 import io.vson.elements.VsonNumber;
 import io.vson.elements.VsonString;
 import io.vson.elements.object.VsonObject;
-import io.vson.elements.other.HjsonDsf;
+import io.vson.elements.other.Dsf;
 import io.vson.other.IVsonProvider;
 import io.vson.other.TempVsonOptions;
 import io.vson.other.VsonException;
@@ -136,7 +136,7 @@ public class VsonParser {
                         }
                 }
                 if (isEol) {
-                    return HjsonDsf.parse(dsfProviders, value.toString().trim());
+                    return Dsf.parse(dsfProviders, value.toString().trim());
                 }
             }
             value.append((char)current);

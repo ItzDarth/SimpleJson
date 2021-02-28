@@ -5,8 +5,8 @@ import io.vson.VsonValue;
 import io.vson.elements.VsonString;
 import io.vson.other.IVsonProvider;
 
-public class HjsonDsf  {
-    private HjsonDsf() {}
+public class Dsf {
+    private Dsf() {}
 
     public static IVsonProvider math() {
         return new DsfMath();

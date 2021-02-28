@@ -8,22 +8,34 @@ public class TempVsonOptions {
     private boolean legacyRoot;
 
     public TempVsonOptions() {
-        dsf=new IVsonProvider[0];
-        legacyRoot=true;
+        this.dsf = new IVsonProvider[0];
+        this.legacyRoot = true;
     }
 
-    public IVsonProvider[] getDsfProviders() { return dsf.clone(); }
+    public IVsonProvider[] getDsfProviders() {
+        return dsf.clone();
+    }
 
-    public void setDsfProviders(IVsonProvider[] value) { dsf=value.clone(); }
+    public void setDsfProviders(IVsonProvider[] value) {
+        this.dsf = value.clone();
+    }
 
-    public boolean getParseLegacyRoot() { return legacyRoot; }
+    public boolean getParseLegacyRoot() {
+        return this.legacyRoot;
+    }
 
-    public void setParseLegacyRoot(boolean value) { legacyRoot=value; }
+    public void setParseLegacyRoot(boolean value) {
+        this.legacyRoot = value;
+    }
 
     @Deprecated
-    public boolean getEmitRootBraces() { return true; }
+    public boolean getEmitRootBraces() {
+        return true;
+    }
 
     @Deprecated
-    public void setEmitRootBraces(boolean value) { }
+    public void setEmitRootBraces(boolean value) {
+
+    }
 
 }

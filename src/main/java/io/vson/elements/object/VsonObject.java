@@ -4,12 +4,14 @@ package io.vson.elements.object;
 import io.vson.VsonValue;
 import io.vson.elements.VsonArray;
 import io.vson.enums.FileFormat;
+import io.vson.enums.VsonComment;
 import io.vson.enums.VsonSettings;
 import io.vson.enums.VsonType;
 import io.vson.manage.json.JsonParser;
 import io.vson.manage.vson.VsonParser;
 import io.vson.other.TempVsonOptions;
 import io.vson.tree.VsonTree;
+import javafx.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +21,7 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
     private List<String> names;
     private List<VsonValue> values;
+    private Map<Integer, Pair<String[], VsonComment>> comments = new HashMap<>();
 
     private File file;
     private HashIndexTable table;
@@ -94,16 +97,6 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         return this;
     }
 
-    public VsonObject append(String name, List<String> value) {
-        StringBuilder stringBuilder = new StringBuilder();
-        int i = value.size();
-        for (String s : value) {
-            i--;
-            stringBuilder.append(s).append(i == 0 ? "" : "\n");
-        }
-        return this.append(name, stringBuilder.toString());
-    }
-
     public VsonObject append(String name, float value) {
         submit(name, valueOf(value));
         return this;
@@ -129,6 +122,14 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         return this;
     }
 
+    public VsonObject comment(String key,  VsonComment vsonComment, String... comment) {
+        if (this.get(key) instanceof VsonObject || this.get(key) instanceof VsonArray) {
+            throw new UnsupportedOperationException("Comments are not available for VsonObjects and VsonArrys at the moment");
+        }
+        this.comments.put(this.indexOf(key), new Pair<>(comment, vsonComment));
+        return this;
+    }
+
     public void submit(String name, VsonValue value) {
         if (name == null) {
             throw new NullPointerException("name is null");
@@ -137,7 +138,7 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
             throw new NullPointerException("value is null");
         }
         if (this.has(name)) {
-            if (this.vsonSettings.isEmpty()) {
+            if (this.vsonSettings == null) {
                 throw new NullPointerException("vsonSettings is null");
             }
             if (this.vsonSettings.contains(VsonSettings.OVERRITE_VALUES)) {
@@ -270,14 +271,17 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         return value!=null ? value.asInt() : defaultValue;
     }
 
-    public float getInteger(String name) {
+    public int getInteger(String name) {
         return this.get(name).asInt();
     }
 
 
     public long getLong(String name, long defaultValue) {
-        VsonValue value = this.get(name);
-        return value!=null ? value.asLong() : defaultValue;
+        if (!this.has(name)) {
+            this.append(name, defaultValue);
+            return defaultValue;
+        }
+        return this.get(name).asLong();
     }
 
     public long getLong(String name) {
@@ -286,8 +290,11 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
 
     public float getFloat(String name, float defaultValue) {
-        VsonValue value = this.get(name);
-        return value!=null ? value.asFloat() : defaultValue;
+        if (!this.has(name)) {
+            this.append(name, defaultValue);
+            return defaultValue;
+        }
+        return this.get(name).asFloat();
     }
 
     public float getFloat(String name) {
@@ -295,8 +302,11 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
     }
 
     public double getDouble(String name, double defaultValue) {
-        VsonValue value = this.get(name);
-        return value!=null ? value.asDouble() : defaultValue;
+        if (!this.has(name)) {
+            this.append(name, defaultValue);
+            return defaultValue;
+        }
+        return this.get(name).asDouble();
     }
 
     public double getDouble(String name) {
@@ -304,8 +314,11 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
     }
 
     public short getShort(String name, short defaultValue) {
-        VsonValue value = this.get(name);
-        return value!=null ? value.asShort() : defaultValue;
+        if (!this.has(name)) {
+            this.append(name, defaultValue);
+            return defaultValue;
+        }
+        return this.get(name).asShort();
     }
 
     public short getShort(String name) {
@@ -314,8 +327,11 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
 
     public boolean getBoolean(String name, boolean defaultValue) {
-        VsonValue value = this.get(name);
-        return value!=null ? value.asBoolean() : defaultValue;
+        if (!this.has(name)) {
+            this.append(name, defaultValue);
+            return defaultValue;
+        }
+        return this.get(name).asBoolean();
     }
 
     public boolean getBoolean(String name) {
@@ -323,8 +339,11 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
     }
 
     public String getString(String name, String defaultValue) {
-        VsonValue value = this.get(name);
-        return value != null ? value.asString() : defaultValue;
+        if (!this.has(name)) {
+            this.append(name, defaultValue);
+            return defaultValue;
+        }
+        return this.get(name).asString();
     }
 
     public String getString(String key) {
@@ -335,8 +354,18 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         return this.get(key).asVsonObject();
     }
 
+    public VsonObject getVson(String key, VsonSettings... vsonSettings) {
+        VsonObject vsonObject = this.get(key).asVsonObject();
+        vsonObject.getVsonSettings().addAll(Arrays.asList(vsonSettings));
+        return vsonObject;
+    }
+
     public VsonObject getVson(String key, VsonObject defaultValue) {
-        return this.has(key) ? this.get(key).asVsonObject() : defaultValue;
+        if (!this.has(key)) {
+            this.append(key, defaultValue);
+            return defaultValue;
+        }
+        return this.get(key).asVsonObject();
     }
 
 
@@ -407,6 +436,15 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
     @Override
     public VsonObject asVsonObject() {
         return this;
+    }
+
+    public VsonValue ofIndex(int index) {
+        for (VsonMember vsonMember : this) {
+            if (this.indexOf(vsonMember.getName()) == index) {
+                return vsonMember.getValue();
+            }
+        }
+        return null;
     }
 
     public int indexOf(String name) {
@@ -485,6 +523,10 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
     public List<VsonValue> getValues() {
         return values;
+    }
+
+    public Map<Integer, Pair<String[], VsonComment>> getComments() {
+        return comments;
     }
 
     public File getFile() {
