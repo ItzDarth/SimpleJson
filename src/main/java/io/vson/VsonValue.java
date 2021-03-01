@@ -63,6 +63,29 @@ public abstract class VsonValue implements Serializable {
         return false;
     }
 
+    public boolean isShort() {
+        return false;
+    }
+
+    public boolean isDouble() {
+        return false;
+    }
+
+    public boolean isLong() {
+        return false;
+    }
+
+    public boolean isByte() {
+        return false;
+    }
+
+    public boolean isInt() {
+        return false;
+    }
+    public boolean isFloat() {
+        return false;
+    }
+
     public boolean isString() {
         return false;
     }

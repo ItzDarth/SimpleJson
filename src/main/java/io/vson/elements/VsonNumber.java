@@ -17,9 +17,9 @@ public class VsonNumber extends VsonValue {
 
     @Override
     public String toString() {
-        long l= (long)value;
+        long l = (long)value;
 
-        if (l==value) {
+        if (l == value) {
             return Long.toString(l);
         }
         String result = BigDecimal.valueOf(value).toEngineeringString();
@@ -41,6 +41,66 @@ public class VsonNumber extends VsonValue {
     @Override
     public boolean isNumber() {
         return true;
+    }
+
+    @Override
+    public boolean isByte() {
+        try {
+            Byte.parseByte(String.valueOf(this.value));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isLong() {
+        try {
+            Long.parseLong(String.valueOf(this.value));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isShort() {
+        try {
+            Short.parseShort(String.valueOf(this.value));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isFloat() {
+        try {
+            Float.parseFloat(String.valueOf(this.value));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isDouble() {
+        try {
+            Double.parseDouble(String.valueOf(this.value));
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Override
+    public boolean isInt() {
+        try {
+            int i = (int)value;
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override

@@ -234,8 +234,16 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         VsonValue value = this.get(key);
         if (value.isString()) {
             return value.asString();
-        } else if (value.isNumber()) {
+        } else if (value.isInt()) {
+            return value.asInt();
+        } else if (value.isDouble()) {
             return value.asDouble();
+        } else if (value.isShort()) {
+            return value.asShort();
+        } else if (value.isByte()) {
+            return value.asByte();
+        } else if (value.isFloat()) {
+            return value.asFloat();
         } else if (value.isBoolean()) {
             return value.asBoolean();
         } else {
