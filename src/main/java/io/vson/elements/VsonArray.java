@@ -73,6 +73,9 @@ public class VsonArray extends VsonValue implements Iterable<VsonValue> {
         if (object instanceof Float) {
             return this.append((Float)object);
         }
+        if (object instanceof VsonValue) {
+            return this.append((VsonValue) object);
+        }
         VsonTree vsonTree = new VsonTree(object);
         return this.append(vsonTree.tree());
     }
@@ -83,8 +86,8 @@ public class VsonArray extends VsonValue implements Iterable<VsonValue> {
     }
 
     public VsonArray append(VsonValue value) {
-        if (value==null) {
-            throw new NullPointerException("value is null");
+        if (value == null) {
+            value = VsonLiteral.NULL;
         }
         values.add(value);
         return this;

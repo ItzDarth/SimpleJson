@@ -3,6 +3,8 @@ package io.vson.elements.object;
 
 import io.vson.VsonValue;
 import io.vson.elements.VsonArray;
+import io.vson.elements.VsonLiteral;
+import io.vson.elements.other.Pair;
 import io.vson.enums.FileFormat;
 import io.vson.enums.VsonComment;
 import io.vson.enums.VsonSettings;
@@ -11,7 +13,6 @@ import io.vson.manage.json.JsonParser;
 import io.vson.manage.vson.VsonParser;
 import io.vson.other.TempVsonOptions;
 import io.vson.tree.VsonTree;
-import javafx.util.Pair;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -21,10 +22,10 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
     private List<String> names;
     private List<VsonValue> values;
-    private Map<Integer, Pair<String[], VsonComment>> comments = new HashMap<>();
 
     private File file;
     private HashIndexTable table;
+    private final Map<Integer, Pair<String[], VsonComment>> comments = new HashMap<>();
     private List<VsonSettings> vsonSettings = new LinkedList<>();
 
     public VsonObject() {
@@ -131,11 +132,12 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
     }
 
     public void submit(String name, VsonValue value) {
+        if (value == null) {
+            this.append(name, VsonLiteral.NULL);
+            return;
+        }
         if (name == null) {
             throw new NullPointerException("name is null");
-        }
-        if (value == null) {
-            throw new NullPointerException("value is null");
         }
         if (this.has(name)) {
             if (this.vsonSettings == null) {
@@ -557,5 +559,17 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
     public List<VsonSettings> getVsonSettings() {
         return vsonSettings;
+    }
+
+
+    public static Map<String, Object> encode(VsonObject vsonObject) {
+        Map<String, Object> map = new HashMap<>();
+        vsonObject.forEach(member -> map.put(member.getName(), vsonObject.getObject(member.getName())));
+        return map;
+    }
+    public static VsonObject encode(Map<String, Object> map) {
+        VsonObject vsonObject = new VsonObject();
+        map.forEach(vsonObject::append);
+        return vsonObject;
     }
 }

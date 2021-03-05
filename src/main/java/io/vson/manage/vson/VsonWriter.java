@@ -5,11 +5,11 @@ import io.vson.elements.VsonArray;
 import io.vson.elements.object.VsonMember;
 import io.vson.elements.object.VsonObject;
 import io.vson.elements.other.Dsf;
+import io.vson.elements.other.Pair;
 import io.vson.enums.VsonComment;
 import io.vson.manage.json.JsonWriter;
 import io.vson.other.IVsonProvider;
 import io.vson.other.TempVsonOptions;
-import javafx.util.Pair;
 
 import java.io.IOException;
 import java.io.Writer;
