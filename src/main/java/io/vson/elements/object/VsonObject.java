@@ -15,6 +15,7 @@ import io.vson.other.TempVsonOptions;
 import io.vson.tree.VsonTree;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -156,6 +157,9 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
     public VsonObject append(String name, Object value) {
         VsonTree vsonTree = new VsonTree(value);
+        if (this.vsonSettings.contains(VsonSettings.SAFE_TREE_OBJECTS)) {
+            vsonTree.setSafe(true);
+        }
         submit(name, vsonTree.tree());
         return this;
     }
@@ -248,8 +252,14 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
             return value.asFloat();
         } else if (value.isBoolean()) {
             return value.asBoolean();
+        } else if (value.isArray()) {
+            return value.asArray().asList();
+        } else if (value.isObject()) {
+            return value.asVsonObject();
+        } else if (value.isNull()) {
+            return VsonLiteral.NULL;
         } else {
-            return null;
+            return value.asObject();
         }
     }
 
@@ -272,6 +282,10 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
     public <T> T getObject(String key, Class<T> tClass) {
         return new VsonTree().unTree(this.get(key), tClass);
+    }
+
+    public <T> T getObject(String key, Type type) {
+        return new VsonTree().unTree(this.get(key), type);
     }
 
     public <T> T getAs(Class<T> tClass) {

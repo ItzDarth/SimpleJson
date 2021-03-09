@@ -20,7 +20,15 @@ public class VsonArray extends VsonValue implements Iterable<VsonValue> {
     }
 
     public VsonArray(VsonArray array, boolean unmodifiable) {
-        this.values = unmodifiable ? Collections.unmodifiableList(array.values) : new ArrayList<VsonValue>(array.values);
+        this.values = unmodifiable ? Collections.unmodifiableList(array.values) : new ArrayList<>(array.values);
+    }
+
+    public List<?> asList() {
+        List<Object> list = new LinkedList<>();
+        for (VsonValue value : this.values) {
+            list.add(value);
+        }
+        return list;
     }
 
     public VsonArray append(int value) {

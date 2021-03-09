@@ -1,10 +1,12 @@
-import io.vson.elements.object.VsonObject;
 import io.vson.elements.object.Objectable;
-import io.vson.enums.VsonComment;
+import io.vson.elements.object.VsonObject;
 import io.vson.enums.VsonSettings;
+import io.vson.manage.vson.VsonParser;
+import io.vson.tree.VsonTree;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.*;
 
 public class Test {
 
@@ -12,10 +14,16 @@ public class Test {
     public static void main(String[] args) {
         try {
             VsonObject vsonObject = new VsonObject(new File("test.vson"), VsonSettings.CREATE_FILE_IF_NOT_EXIST, VsonSettings.OVERRITE_VALUES);
-            vsonObject.comment("int", VsonComment.MULTI_LINE, "das ist ein comment", "lol");
+            VsonParser vsonParser = new VsonParser();
+            VsonTree vsonTree = new VsonTree();
 
-            Mensch mensch = new Mensch("Lystx", "Heeg", new VsonObject().append("yarro", 39).append("alt", false), new Mensch("Mick", "Schmitz", new VsonObject(), null));
+            Mensch mensch = new Mensch("Luca", Arrays.asList(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
+            vsonObject.putAll(mensch);
 
+            Mensch newMensch = mensch.from(vsonObject, Mensch.class);
+
+            System.out.println(newMensch.getName());
+            System.out.println(newMensch.getBans());
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -24,18 +32,23 @@ public class Test {
     }
 
 
-
     public static class Mensch implements Objectable {
 
-        private final String name, nachname;
-        private final VsonObject entries;
-        private final Mensch freund;
+        private final String name;
+        private final List<UUID> bans;
 
-        public Mensch(String name, String nachname, VsonObject entries, Mensch freund) {
+        public Mensch(String name, List<UUID> bans) {
             this.name = name;
-            this.nachname = nachname;
-            this.entries = entries;
-            this.freund = freund;
+            this.bans = bans;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<UUID> getBans() {
+            return bans;
         }
     }
+
 }

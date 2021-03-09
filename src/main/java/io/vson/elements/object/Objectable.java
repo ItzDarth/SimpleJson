@@ -8,12 +8,15 @@ import io.vson.manage.vson.VsonParser;
 import io.vson.tree.VsonTree;
 
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public interface Objectable {
-
 
     default Map<String, Object> asMap() {
         Map<String, Object> map = new HashMap<>();
@@ -51,6 +54,28 @@ public interface Objectable {
 
     default <T> T as(Class<T> tClass) {
         return this.asVsonObject().getAs(tClass);
+    }
+
+
+    default <T> T from(VsonObject vsonObject, Class<T> tClass) {
+        try {
+            for (Constructor<?> declaredConstructor : tClass.getDeclaredConstructors()) {
+                List<Object> args = new LinkedList<>();
+                for (Class<?> ignored : declaredConstructor.getParameterTypes()) {
+                    args.add(null);
+                }
+                T object = (T) declaredConstructor.newInstance(args.toArray());
+                for (VsonMember vsonMember : vsonObject) {
+                    Field field = object.getClass().getDeclaredField(vsonMember.getName());
+                    field.setAccessible(true);
+                    field.set(object, vsonObject.getObject(vsonMember.getName()));
+                }
+                return object;
+            }
+        } catch (InstantiationException | IllegalAccessException | NoSuchFieldException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     default VsonArray asArray() {
