@@ -1,0 +1,8 @@
+{
+  testMensch:
+  {
+    name: Hans
+    alter: 54
+    gson: com.google.gson.Gson
+  }
+}

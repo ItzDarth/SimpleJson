@@ -1,54 +1,76 @@
-import io.vson.elements.object.Objectable;
+import com.google.gson.Gson;
+import io.vson.VsonValue;
+import io.vson.annotation.other.Vson;
+import io.vson.annotation.other.VsonAdapter;
 import io.vson.elements.object.VsonObject;
 import io.vson.enums.VsonSettings;
-import io.vson.manage.vson.VsonParser;
-import io.vson.tree.VsonTree;
+import io.vson.manage.vson.VsonWriter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 
 public class Test {
 
 
     public static void main(String[] args) {
+        Vson.get().registerAdapter(new MenschAdapter());
         try {
-            VsonObject vsonObject = new VsonObject(new File("test.vson"), VsonSettings.CREATE_FILE_IF_NOT_EXIST, VsonSettings.OVERRITE_VALUES);
-            VsonParser vsonParser = new VsonParser();
-            VsonTree vsonTree = new VsonTree();
+            VsonObject object = new VsonObject(new File("test.vson"), VsonSettings.OVERRITE_VALUES, VsonSettings.CREATE_FILE_IF_NOT_EXIST);
+            object.append("testMensch", new Mensch("Hans", 54, new Gson()));
 
-            Mensch mensch = new Mensch("Luca", Arrays.asList(UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID()));
-            vsonObject.putAll(mensch);
+            object.save();
 
-            Mensch newMensch = mensch.from(vsonObject, Mensch.class);
-
-            System.out.println(newMensch.getName());
-            System.out.println(newMensch.getBans());
+            Mensch mensch = object.getObject("testMensch", Mensch.class);
+            System.out.println(mensch.getName());
 
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
 
-    public static class Mensch implements Objectable {
+    public static class MenschAdapter implements VsonAdapter<Mensch> {
+
+        @Override
+        public VsonValue write(Mensch mensch, VsonWriter vsonWriter) {
+            VsonObject vsonObject = new VsonObject();
+            vsonObject.append("name", mensch.getName());
+            vsonObject.append("alter", mensch.getAlter());
+            vsonObject.append("gson", mensch.gson.getClass().getName());
+            return vsonObject;
+        }
+
+        @Override
+        public Mensch read(VsonValue vsonValue) {
+            return null;
+        }
+
+        @Override
+        public Class<Mensch> getTypeClass() {
+            return Mensch.class;
+        }
+    }
+
+
+    public static class Mensch {
 
         private final String name;
-        private final List<UUID> bans;
+        private final int alter;
+        private final Gson gson;
 
-        public Mensch(String name, List<UUID> bans) {
+        public Mensch(String name, int alter,Gson gson) {
             this.name = name;
-            this.bans = bans;
+            this.alter = alter;
+            this.gson = gson;
         }
 
         public String getName() {
             return name;
         }
 
-        public List<UUID> getBans() {
-            return bans;
+        public int getAlter() {
+            return alter;
         }
-    }
 
+    }
 }

@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import io.vson.VsonValue;
+import io.vson.annotation.other.VsonAdapter;
+import io.vson.annotation.other.Vson;
 import io.vson.elements.VsonArray;
 import io.vson.elements.VsonLiteral;
 import io.vson.elements.VsonNumber;
@@ -11,6 +13,8 @@ import io.vson.elements.VsonString;
 import io.vson.elements.object.VsonObject;
 import io.vson.enums.FileFormat;
 import io.vson.manage.vson.VsonParser;
+import io.vson.manage.vson.VsonWriter;
+import io.vson.other.TempVsonOptions;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -39,8 +43,19 @@ public class VsonTree {
     }
 
     public <T> T unTree(VsonValue vsonValue, Class<T> tClass) {
-        JsonElement jsonObject = new JsonParser().parse(vsonValue.toString(FileFormat.JSON));
-        return new Gson().fromJson(jsonObject, tClass);
+        T object = null;
+        if (Vson.get().getAdapters(tClass).size() >= 1) {
+            for (VsonAdapter<?> transformer : Vson.get().getAdapters(tClass)) {
+                if (transformer.getTypeClass().equals(tClass)) {
+                    object = (T) transformer.read(vsonValue);
+                }
+            }
+        }
+        if (object == null) {
+            JsonElement jsonObject = new JsonParser().parse(vsonValue.toString(FileFormat.JSON));
+            return new Gson().fromJson(jsonObject, tClass);
+        }
+        return object;
     }
 
     public <T> T unTree(VsonValue vsonValue, Type type) {
@@ -55,8 +70,8 @@ public class VsonTree {
         return this.tree(this.object);
     }
 
-    public VsonValue tree(Object object) {
-        VsonValue value;
+    public <T> VsonValue tree(T object) {
+        VsonValue value = null;
         if (object instanceof List) {
             VsonArray vsonArray = new VsonArray();
             ((List<?>) object).forEach(vsonArray::submit);
@@ -81,6 +96,13 @@ public class VsonTree {
             if (object == null) {
                 value = VsonLiteral.NULL;
             } else {
+                if (Vson.get().getAdapters(object.getClass()).size() >= 1) {
+                    for (VsonAdapter<?> transformer : Vson.get().getAdapters(object.getClass())) {
+                        VsonAdapter<T> tVsonAdapter = (VsonAdapter<T>) transformer;
+                        value =  tVsonAdapter.write(object, new VsonWriter(new TempVsonOptions()));
+                    }
+                    return value;
+                }
                 VsonObject vsonObject = new VsonObject();
                 for (Field declaredField : object.getClass().getDeclaredFields()) {
                     if (declaredField == null) {
@@ -108,7 +130,7 @@ public class VsonTree {
     }
 
     @Deprecated
-    public VsonValue treeSafe(Object object) {
+    public <T> VsonValue treeSafe(T object) {
         JsonElement jsonElement = new Gson().toJsonTree(object);
         try {
             if (object instanceof List) {
@@ -123,6 +145,15 @@ public class VsonTree {
                     vsonObject.append(key.toString(), value);
                 });
                 return vsonObject;
+            } else {
+                if (Vson.get().getAdapters(object.getClass()).size() >= 1) {
+                    VsonValue value = null;
+                    for (VsonAdapter<?> transformer : Vson.get().getAdapters(object.getClass())) {
+                        VsonAdapter<T> tVsonAdapter = (VsonAdapter<T>) transformer;
+                        value =  tVsonAdapter.write(object, new VsonWriter(new TempVsonOptions()));
+                    }
+                    return value;
+                }
             }
             return new VsonParser(jsonElement.toString()).parse();
         } catch (IOException e) {

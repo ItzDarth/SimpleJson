@@ -3,7 +3,6 @@ package io.vson.elements.object;
 import com.google.gson.JsonElement;
 import io.vson.VsonValue;
 import io.vson.elements.VsonArray;
-import io.vson.elements.VsonLiteral;
 import io.vson.manage.vson.VsonParser;
 import io.vson.tree.VsonTree;
 
@@ -11,12 +10,9 @@ import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public interface Objectable {
+public interface Objectable<O> {
 
     default Map<String, Object> asMap() {
         Map<String, Object> map = new HashMap<>();
@@ -56,6 +52,9 @@ public interface Objectable {
         return this.asVsonObject().getAs(tClass);
     }
 
+    default O from(VsonObject vsonObject) {
+        return (O) this.from(vsonObject, this.getClass());
+    }
 
     default <T> T from(VsonObject vsonObject, Class<T> tClass) {
         try {
@@ -68,7 +67,16 @@ public interface Objectable {
                 for (VsonMember vsonMember : vsonObject) {
                     Field field = object.getClass().getDeclaredField(vsonMember.getName());
                     field.setAccessible(true);
-                    field.set(object, vsonObject.getObject(vsonMember.getName()));
+                    Object v = vsonObject.getObject(vsonMember.getName());
+                    if (v instanceof String) {
+                        try {
+                            field.set(object, UUID.fromString((String) v));
+                        } catch (Exception e) {
+                            field.set(object, v);
+                        }
+                    } else {
+                        field.set(object, v);
+                    }
                 }
                 return object;
             }

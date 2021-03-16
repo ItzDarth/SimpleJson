@@ -4,15 +4,38 @@ package io.vson.annotation.other;
 import io.vson.elements.object.VsonObject;
 
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.LinkedList;
+import java.util.List;
 
-public class VsonInstance {
+public class Vson {
 
-	private static final VsonInstance instance = new VsonInstance();
+	private static Vson instance;
+	private final List<VsonAdapter<?>> adapters;
 
-	public static VsonInstance getInstance() {
+	public Vson() {
+		this.adapters = new LinkedList<>();
+	}
+
+	public static Vson get() {
+		if (instance == null) {
+			instance = new Vson();
+		}
 		return instance;
+	}
+
+	public void registerAdapter(VsonAdapter<?> transformer) {
+		this.adapters.add(transformer);
+	}
+
+	public <T> List<VsonAdapter<T>> getAdapters(Class<T> tClass) {
+		List<VsonAdapter<T>> list = new LinkedList<>();
+		for (VsonAdapter<?> adapter : adapters) {
+			if (adapter.getTypeClass().equals(tClass)) {
+				list.add((VsonAdapter<T>) adapter);
+			}
+		}
+		return list;
 	}
 
 	public void registerClass(Object classToLoad) {

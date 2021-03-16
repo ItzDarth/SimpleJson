@@ -152,7 +152,7 @@ public class VsonParser {
                     case 'f':
                     case 'n':
                     case 't':
-                        String svalue=value.toString().trim();
+                        String svalue = value.toString().trim();
                         switch (svalue) {
                             case "false":
                                 return VsonLiteral.FALSE;

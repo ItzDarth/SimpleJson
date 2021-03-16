@@ -64,7 +64,7 @@ public class VsonLiteral extends VsonValue {
     }
 
     @Override
-    public boolean asBoolean() {
+    public Boolean asBoolean() {
         return value == VsonValidates.NULL ? super.asBoolean() : value== VsonValidates.TRUE;
     }
 

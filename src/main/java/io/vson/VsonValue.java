@@ -142,7 +142,7 @@ public abstract class VsonValue implements Serializable {
         throw new UnsupportedOperationException("Not a string: "+toString());
     }
 
-    public boolean asBoolean() {
+    public Boolean asBoolean() {
         throw new UnsupportedOperationException("Not a boolean: "+toString());
     }
 

@@ -38,34 +38,41 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
     public VsonObject(VsonSettings... vsonSettings) {
         this();
         this.vsonSettings.addAll(Arrays.asList(vsonSettings));
+        this.clearCheck();
     }
 
     public VsonObject(VsonObject object) {
         this(object, false);
+        this.clearCheck();
     }
 
     public VsonObject(VsonObject object, VsonSettings... vsonSettings) {
         this(object, false);
         this.vsonSettings.addAll(Arrays.asList(vsonSettings));
+        this.clearCheck();
     }
 
     public VsonObject(String input) throws IOException {
         this(new JsonParser(input).parse().asVsonObject());
+        this.clearCheck();
     }
 
     public VsonObject(String input, VsonSettings... vsonSettings) throws IOException {
         this(input);
         this.vsonSettings.addAll(Arrays.asList(vsonSettings));
+        this.clearCheck();
     }
 
     public VsonObject(File file) throws IOException {
         this(file.exists() ? new VsonParser(new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)), new TempVsonOptions()).parse().asVsonObject() : new VsonObject());
         this.file = file;
+        this.clearCheck();
     }
 
     public VsonObject(File file, VsonSettings... vsonSettings) throws IOException {
         this(file);
         this.vsonSettings.addAll(Arrays.asList(vsonSettings));
+        this.clearCheck();
     }
 
     private VsonObject(VsonObject object, boolean unmodifiable) {
@@ -73,6 +80,13 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         this.names = unmodifiable ? Collections.unmodifiableList(object.getNames()) : new LinkedList<>(object.getNames());
         this.values = unmodifiable ? Collections.unmodifiableList(object.getValues()) : new LinkedList<>(object.getValues());
         this.updateHashIndex();
+
+    }
+
+    private void clearCheck() {
+        if (this.vsonSettings.contains(VsonSettings.CLEAR_ON_LOAD)) {
+            this.clear();
+        }
     }
 
     public VsonObject clone(VsonObject vsonObject) {
@@ -359,6 +373,18 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
         return this.get(name).asShort();
     }
 
+    public byte getByte(String name, byte defaultValue) {
+        if (!this.has(name)) {
+            this.append(name, defaultValue);
+            return defaultValue;
+        }
+        return this.get(name).asByte();
+    }
+
+    public byte getByte(String name) {
+        return this.get(name).asByte();
+    }
+
 
     public boolean getBoolean(String name, boolean defaultValue) {
         if (!this.has(name)) {
@@ -502,11 +528,7 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
     }
 
     public void save() {
-        if (this.file != null) {
-            this.save(this.file, FileFormat.VSON);
-        } else {
-            throw new NullPointerException("File not found");
-        }
+        this.save(this.file, FileFormat.VSON);
     }
     public void save(FileFormat format) {
         if (this.file != null) {
@@ -523,9 +545,13 @@ public class VsonObject extends VsonValue implements Iterable<VsonMember> {
 
     public void save(File file, FileFormat format) {
         try {
-            if (this.vsonSettings.contains(VsonSettings.CREATE_FILE_IF_NOT_EXIST) && !this.file.exists()) {
-                if (this.file.createNewFile()) {
-                    this.save(file, format);
+            if (!this.file.exists()) {
+                if (this.vsonSettings.contains(VsonSettings.CREATE_FILE_IF_NOT_EXIST)) {
+                    if (this.file.createNewFile()) {
+                        this.save(file, format);
+                    }
+                } else {
+                    throw new UnsupportedOperationException("Can not save File " + file.getName() + " because File does not exist and VsonSettings do not contain " + VsonSettings.CREATE_FILE_IF_NOT_EXIST.name() + "!");
                 }
             }
             if (format.equals(FileFormat.PROPERTIES)) {
