@@ -1,4 +1,3 @@
-[![](https://github.com/Ratsiiel/json-library/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/Ratsiiel/json-library/actions/workflows/gradle.yml)
 
 # SimpleJson (Json-Library)
 
