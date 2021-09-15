@@ -23,6 +23,8 @@ public enum JsonFormat {
      *     key : value
      * } )
      */
-    SIMPLE,
+    SIMPLE;
+
+
 }
 

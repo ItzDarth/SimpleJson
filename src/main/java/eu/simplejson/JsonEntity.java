@@ -10,8 +10,8 @@ import eu.simplejson.elements.JsonString;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.enums.JsonType;
 import eu.simplejson.helper.parsers.WritingBuffer;
-import eu.simplejson.helper.parsers.json.JsonWriter;
-import eu.simplejson.helper.parsers.vson.SimpleJsonWriter;
+import eu.simplejson.helper.parsers.json.NormalJsonWriter;
+import eu.simplejson.helper.parsers.easy.SimpleJsonWriter;
 import lombok.Setter;
 
 import java.io.IOException;
@@ -361,21 +361,23 @@ public abstract class JsonEntity implements Serializable {
      */
     public String toString(JsonFormat format) {
         StringWriter writer = new StringWriter();
+
         try {
-            WritingBuffer buffer=new WritingBuffer(writer, 128);
-            switch (format) {
-                case RAW: new JsonWriter(false).save(this, buffer, 0); break;
-                case FORMATTED: new JsonWriter(true).save(this, buffer, 0); break;
-                case SIMPLE: new SimpleJsonWriter().save(null, this, buffer, 0, null, "", true); break;
+            WritingBuffer buffer = new WritingBuffer(writer, 128);
+
+            if (format != JsonFormat.SIMPLE) {
+                NormalJsonWriter jsonWriter = new NormalJsonWriter(format == JsonFormat.FORMATTED);
+                jsonWriter.save(this, buffer, 0);
+            } else {
+                SimpleJsonWriter jsonWriter = new SimpleJsonWriter();
+                jsonWriter.save(null, this, buffer, 0, null, "", true);
             }
+
             buffer.flush();
-        } catch(IOException exception) {
+        } catch (IOException exception) {
             throw new RuntimeException(exception);
         }
         return writer.toString();
     }
-    
-    public static boolean isPunctuatedChar(int c) {
-        return c == '{' || c == '}' || c == '[' || c == ']' || c == ',' || c == ':';
-    }
+
 }

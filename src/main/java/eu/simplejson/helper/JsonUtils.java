@@ -1,14 +1,17 @@
 package eu.simplejson.helper;
 
 import eu.simplejson.JsonEntity;
-import eu.simplejson.elements.JsonString;
 import eu.simplejson.helper.adapter.JsonSerializer;
-import eu.simplejson.helper.other.JsonProvider;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class JsonUtils {
+
+    public static final int MIN_BUFFER_SIZE = 10;
+    public static final int DEFAULT_BUFFER_SIZE = 1024;
+    public static final Pattern NEED_ESCAPE_NAME = Pattern.compile("[,\\{\\[\\}\\]\\s:#\"']|//|/\\*");
 
     /**
      * Creates an Object from scratch
@@ -67,6 +70,9 @@ public class JsonUtils {
         }
     }
 
+    public static boolean isPunctuatedChar(int c) {
+        return c == '{' || c == '}' || c == '[' || c == ']' || c == ',' || c == ':';
+    }
 
     /**
      * Loads all subclasses (extended classes)
@@ -140,7 +146,7 @@ public class JsonUtils {
      * if the main-class does not have any serializer registered
      *
      * @param typeClass the type class
-     * @param <T> the generic
+     * @param <T>       the generic
      * @return serializer or null
      */
     public static <T> JsonSerializer<T> getSerializerOrNull(Json json, Class<T> typeClass) {
@@ -172,54 +178,15 @@ public class JsonUtils {
      * Gets an object from a given {@link JsonEntity} if its adapter
      * exists, otherwise it will just return null
      *
-     * @param json the entity
+     * @param json      the entity
      * @param typeClass the type class
-     * @param <T> the generic
+     * @param <T>       the generic
      * @return object or null
      */
-    public static  <T> T getSerializedOrNull(Json instance, JsonEntity json, Class<T> typeClass) {
+    public static <T> T getSerializedOrNull(Json instance, JsonEntity json, Class<T> typeClass) {
         JsonSerializer<T> adapterOrNull = getSerializerOrNull(instance, typeClass);
         return adapterOrNull == null ? null : adapterOrNull.deserialize(json);
     }
 
-    public static boolean isInvalidDsfChar(char c) {
-        return c == '{' || c == '}' || c == '[' || c == ']' || c == ',';
-    }
-
-
-    public static JsonEntity parse(JsonProvider[] dsfProviders, String value) {
-        for (JsonProvider dsf : dsfProviders) {
-            try {
-                JsonEntity res = dsf.parse(value);
-                if (res != null) return res;
-            } catch (Exception exception) {
-                throw new RuntimeException("DSF-" + dsf.getName() + " failed; " + exception.getMessage());
-            }
-        }
-        return new JsonString(value);
-    }
-    public static String stringify(JsonProvider[] dsfProviders, JsonEntity value) {
-        for (JsonProvider dsf : dsfProviders) {
-            try {
-                String text = dsf.toString(value);
-                if (text != null) {
-                    boolean isInvalid = false;
-                    char[] textc = text.toCharArray();
-                    for (char ch : textc) {
-                        if (isInvalidDsfChar(ch)) {
-                            isInvalid = true;
-                            break;
-                        }
-                    }
-                    if (isInvalid || text.length() == 0 || textc[0] == '"')
-                        throw new Exception("value may not be empty, start with a quote or contain a punctuator character except colon: " + text);
-                    return text;
-                }
-            } catch (Exception exception) {
-                throw new RuntimeException("DSF-" + dsf.getName() + " failed; " + exception.getMessage());
-            }
-        }
-        return null;
-    }
 
 }

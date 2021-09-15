@@ -8,67 +8,155 @@ import eu.simplejson.exception.JsonParseException;
 import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.JsonNumber;
 import eu.simplejson.elements.JsonString;
+import eu.simplejson.helper.JsonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
 
-public class JsonParser {
+public class NormalJsonParser {
 
-    private static final int MIN_BUFFER_SIZE=10;
-    private static final int DEFAULT_BUFFER_SIZE=1024;
 
+    /**
+     * The reader object
+     */
     private final Reader reader;
+
+    /**
+     * The input as char[]
+     */
     private final char[] buffer;
+
+    /**
+     * The offset of the buffer
+     */
     private int bufferOffset;
+
+    /**
+     * The current index of the buffer
+     */
     private int index;
+
+    /**
+     * The filling count
+     */
     private int fill;
+
+    /**
+     * The current line
+     */
     private int line;
+
+    /**
+     * The current line offset
+     */
     private int lineOffset;
+
+    /**
+     * The current count
+     */
     private int current;
+
+    /**
+     * The capturing string builder
+     */
     private StringBuilder captureBuffer;
+
+    /**
+     * Where the capturing starts
+     */
     private int captureStart;
 
-    public JsonParser(String string) {
-        this(new StringReader(string),
-                Math.max(MIN_BUFFER_SIZE, Math.min(DEFAULT_BUFFER_SIZE, string.length())));
+    /**
+     * Constructs this parser with a {@link String} input
+     *
+     * @param string the input to parse
+     */
+    public NormalJsonParser(String string) {
+        this(new StringReader(string), Math.max(JsonUtils.MIN_BUFFER_SIZE, Math.min(JsonUtils.DEFAULT_BUFFER_SIZE, string.length())));
     }
 
-    public JsonParser(Reader reader) {
-        this(reader, DEFAULT_BUFFER_SIZE);
+    /**
+     * Constructs this parser with a {@link Reader} instance
+     *
+     * @param reader the reader
+     */
+    public NormalJsonParser(Reader reader) {
+        this(reader, JsonUtils.DEFAULT_BUFFER_SIZE);
     }
 
-    public JsonParser(Reader reader, int buffersize) {
-        this.reader=reader;
-        buffer=new char[buffersize];
-        line=1;
-        captureStart=-1;
+    /**
+     * Constructs this parser with a {@link Reader} instance
+     * and already a provided size of the buffer
+     *
+     * @param reader the reader
+     * @param size the buffer size
+     */
+    public NormalJsonParser(Reader reader, int size) {
+        this.reader = reader;
+        this.buffer = new char[size];
+        this.line = 1;
+        this.captureStart = -1;
     }
 
+    /**
+     * Parses the given input into {@link JsonEntity}
+     *
+     * @return entity
+     * @throws IOException if something goes wrong
+     */
     public JsonEntity parse() throws IOException {
+
+        //Reading and skipping spaces
         this.read();
         this.skipWhiteSpace();
-        JsonEntity result=readValue();
+
+        //Setting value
+        JsonEntity parsedEntity = readValue();
+
+        //Skipping spaces again
         this.skipWhiteSpace();
-        if (!isEndOfText()) throw error("Unexpected character");
-        return result;
+
+        //Throwing error if end of file
+        if (!isEndOfText()) {
+            throw error("Unexpected character");
+        }
+        return parsedEntity;
     }
 
+    /**
+     * Reads a {@link JsonEntity} from the current char
+     *
+     * @return entity or throws error
+     */
     private JsonEntity readValue() throws IOException {
-        switch(current) {
+        switch (current) {
+
             case 'n':
+                //Is null instance
                 return readNull();
+
             case 't':
+                //Is boolean instance (true)
                 return readTrue();
+
             case 'f':
+                //Is boolean instance (false)
                 return readFalse();
+
             case '"':
+                //Is empty String instance
                 return readString();
+
             case '[':
+                //Is array instance
                 return readArray();
+
             case '{':
+                //Is object instance
                 return readObject();
+
             case '-':
             case '0':
             case '1':
@@ -80,61 +168,105 @@ public class JsonParser {
             case '7':
             case '8':
             case '9':
+                //Is number instance
                 return readNumber();
             default:
+                //Nothing found throwing error
                 throw expected("value");
         }
     }
 
+    /**
+     * Reads a {@link JsonArray} from this parser
+     *
+     * @return array or throw error
+     */
     private JsonArray readArray() throws IOException {
-        read();
-        JsonArray array=new JsonArray();
-        skipWhiteSpace();
-        if (readIf(']')) {
+
+        //Reading and skipping spaces
+        this.read();
+        this.skipWhiteSpace();
+
+        //Creating new array
+        JsonArray array = new JsonArray();
+
+        //Ending array if "]" reached
+        if (this.readIf(']')) {
             return array;
-        }
-        do {
-            skipWhiteSpace();
-            array.add(readValue());
-            skipWhiteSpace();
-        } while (readIf(','));
-        if (!readIf(']')) {
-            throw expected("',' or ']'");
+        } do {
+
+            //Adding new value by reading it
+            this.skipWhiteSpace();
+            array.add(this.readValue());
+            this.skipWhiteSpace();
+
+        } while (this.readIf(','));
+
+        //Didn't end with a closing char throwing error
+        if (!this.readIf(']')) {
+            throw this.expected("',' or ']'");
         }
         return array;
     }
 
+    /**
+     * Reads {@link JsonObject} from this parser
+     *
+     * @return object or throw error
+     */
     private JsonObject readObject() throws IOException {
-        read();
+        //Reading and skipping spaces
+        this.read();
+        this.skipWhiteSpace();
+
+        //Creating new object
         JsonObject object = new JsonObject();
-        skipWhiteSpace();
-        if (readIf('}')) {
+
+
+        //Ending array if "}" reached
+        if (this.readIf('}')) {
             return object;
-        }
-        do {
-            skipWhiteSpace();
-            String name=readName();
-            skipWhiteSpace();
-            if (!readIf(':')) {
-                throw expected("':'");
+        } do {
+            this.skipWhiteSpace();
+            String name = this.readName();
+            this.skipWhiteSpace();
+
+            //Wrong formatting throwing error
+            if (!this.readIf(':')) {
+                throw this.expected("':'");
             }
-            skipWhiteSpace();
-            object.add(name, readValue());
-            skipWhiteSpace();
-        } while (readIf(','));
-        if (!readIf('}')) {
-            throw expected("',' or '}'");
+            //Read name and now reading value
+            this.skipWhiteSpace();
+            object.add(name, this.readValue());
+            this.skipWhiteSpace();
+
+        } while (readIf(',')); //Reading while a new value is following
+
+
+        //Didn't end with a closing char throwing error
+        if (!this.readIf('}')) {
+            throw this.expected("',' or '}'");
         }
         return object;
     }
 
+    /**
+     * Reads current name of current entity that is getting read
+     *
+     * @return name or throw error
+     */
     private String readName() throws IOException {
-        if (current!='"') {
-            throw expected("name");
+        if (current != '"') {
+            throw this.expected("name");
         }
         return readStringInternal();
     }
 
+    /**
+     * Reads a null instance
+     *
+     * @return entity or throw exception
+     */
     private JsonEntity readNull() throws IOException {
         read();
         readRequiredChar('u');

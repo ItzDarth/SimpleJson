@@ -5,18 +5,18 @@ import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.JsonArray;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.elements.object.JsonEntry;
-import eu.simplejson.helper.parsers.vson.SimpleJsonParser;
+import eu.simplejson.helper.parsers.easy.SimpleJsonParser;
 import eu.simplejson.enums.JsonType;
 
 import java.io.IOException;
 import java.io.Writer;
 
 
-public class JsonWriter {
+public class NormalJsonWriter {
 
     public boolean format;
 
-    public JsonWriter(boolean format) {
+    public NormalJsonWriter(boolean format) {
         this.format = format;
     }
 
@@ -92,7 +92,7 @@ public class JsonWriter {
                 break;
             }
         }
-        if (needsEscape) return "\""+ JsonWriter.escapeString(name)+"\"";
+        if (needsEscape) return "\""+ NormalJsonWriter.escapeString(name)+"\"";
         else return name;
     }
 

@@ -1,4 +1,4 @@
-package eu.simplejson.helper.parsers.vson;
+package eu.simplejson.helper.parsers.easy;
 
 import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.JsonArray;
@@ -6,40 +6,26 @@ import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.elements.object.JsonEntry;
 import eu.simplejson.helper.JsonUtils;
 import eu.simplejson.enums.CommentType;
-import eu.simplejson.helper.parsers.json.JsonWriter;
-import eu.simplejson.helper.other.JsonProvider;
+import eu.simplejson.helper.parsers.json.NormalJsonWriter;
 import javafx.util.Pair;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.regex.Pattern;
+import java.util.ArrayList;
 
 public class SimpleJsonWriter {
 
-    private final JsonProvider[] dsfProviders;
-
-    public static Pattern needsEscapeName=Pattern.compile("[,\\{\\[\\}\\]\\s:#\"']|//|/\\*");
-
-    public SimpleJsonWriter() {
-        dsfProviders = new JsonProvider[0];
-    }
-
-    public void nl(Writer tw, int level) throws IOException {
+    public void newLine(Writer tw, int level) throws IOException {
         tw.write(System.getProperty("line.separator"));
-        for (int i=0; i<level; i++) tw.write("  ");
+        for (int i = 0; i < level; i++) {
+            tw.write("  ");
+        }
     }
 
     public void save(JsonObject parent, JsonEntity value, Writer tw, int level, JsonEntry member, String separator, boolean noIndent) throws IOException {
-        if (value==null) {
+        if (value == null) {
             tw.write(separator);
             tw.write("null");
-            return;
-        }
-
-        String dsfValue= JsonUtils.stringify(dsfProviders, value);
-        if (dsfValue!=null) {
-            tw.write(separator);
-            tw.write(dsfValue);
             return;
         }
 
@@ -47,29 +33,29 @@ public class SimpleJsonWriter {
         switch (value.getType()) {
             case OBJECT:
                 JsonObject obj= value.asJsonObject();
-                if (!noIndent) { if (obj.size()>0) nl(tw, level); else tw.write(separator); }
+                if (!noIndent) { if (obj.size()>0) newLine(tw, level); else tw.write(separator); }
                 tw.write('{');
 
                 for (JsonEntry pair : obj) {
-                    nl(tw, level+1);
+                    newLine(tw, level+1);
                     tw.write(escapeName(pair.getName()));
                     tw.write(":");
                     save(obj, pair.getValue(), tw, level+1, pair," ", false);
                 }
 
-                if (obj.size()>0) nl(tw, level);
+                if (obj.size()>0) newLine(tw, level);
                 tw.write('}');
                 break;
             case ARRAY:
                 JsonArray arr=value.asJsonArray();
                 int n=arr.size();
-                if (!noIndent) { if (n>0) nl(tw, level); else tw.write(separator); }
+                if (!noIndent) { if (n>0) newLine(tw, level); else tw.write(separator); }
                 tw.write('[');
                 for (int i=0; i<n; i++) {
-                    nl(tw, level+1);
+                    newLine(tw, level+1);
                     save(parent, arr.get(i), tw, level+1, member, "", true);
                 }
-                if (n>0) nl(tw, level);
+                if (n>0) newLine(tw, level);
                 tw.write(']');
                 break;
             case BOOLEAN:
@@ -100,7 +86,7 @@ public class SimpleJsonWriter {
             case STRING:
                 if (comment != null) {
                     if (comment.getValue().equals(CommentType.BEHIND_VALUE)) {
-                        writeString(value.asString() + " //" + comment.getKey()[0], tw, level, separator);
+                        writeString(value.asString() + " ##" + comment.getKey()[0], tw, level, separator);
                         break;
                     } else if (comment.getValue().equals(CommentType.UNDER_VALUE)) {
                         writeString(value.asString(), tw, level, separator);
@@ -160,10 +146,9 @@ public class SimpleJsonWriter {
         return null;
     }
 
-
     public static String escapeName(String name) {
-        if (name.length()==0 || needsEscapeName.matcher(name).find())
-            return "\""+ JsonWriter.escapeString(name)+"\"";
+        if (name.length()==0 || JsonUtils.NEED_ESCAPE_NAME.matcher(name).find())
+            return "\""+ NormalJsonWriter.escapeString(name)+"\"";
         else
             return name;
     }
@@ -185,7 +170,7 @@ public class SimpleJsonWriter {
                 left=='\'' ||
                 left=='#' ||
                 left=='/' && (left1=='*' || left1=='/') ||
-                JsonEntity.isPunctuatedChar(left) ||
+                JsonUtils.isPunctuatedChar(left) ||
                 SimpleJsonParser.tryParseNumber(value, true)!=null ||
                 startsWithKeyword(value)) {
             boolean noEscape=true;
@@ -198,7 +183,7 @@ public class SimpleJsonWriter {
                 else if (!SimpleJsonParser.isWhiteSpace(ch)) allWhite=false;
             }
             if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level, separator);
-            else tw.write(separator+"\""+JsonWriter.escapeString(value)+"\"");
+            else tw.write(separator+"\""+ NormalJsonWriter.escapeString(value)+"\"");
         }
         else tw.write(separator+value);
     }
@@ -213,14 +198,14 @@ public class SimpleJsonWriter {
         }
         else {
             level++;
-            nl(tw, level);
+            newLine(tw, level);
             tw.write("'''");
 
             for (String line : lines) {
-                nl(tw, line.length()>0?level:0);
+                newLine(tw, line.length()>0?level:0);
                 tw.write(line);
             }
-            nl(tw, level);
+            newLine(tw, level);
             tw.write("'''");
         }
     }

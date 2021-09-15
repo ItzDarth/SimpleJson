@@ -1,12 +1,9 @@
 
-import eu.simplejson.elements.JsonString;
+import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.object.JsonObject;
+import eu.simplejson.enums.CommentType;
 import eu.simplejson.enums.JsonFormat;
-import eu.simplejson.helper.Json;
-
-import java.io.File;
-import java.util.UUID;
-
+import eu.simplejson.helper.parsers.JsonParser;
 
 public class Test {
 
@@ -16,13 +13,13 @@ public class Test {
 
     public Test() {
 
-        long start = System.currentTimeMillis();
+        JsonObject jsonObject = new JsonObject();
 
-        System.out.println(Json.getInstance().fromJson(new JsonString(UUID.randomUUID().toString()), UUID.class));
+        jsonObject.setFormat(JsonFormat.SIMPLE);
+        jsonObject.addProperty("name", "Lystx").comment("name", CommentType.BEHIND_VALUE, "This is the name");
 
-        System.out.println((System.currentTimeMillis() - start) + "ms took the operation #1!");
+        System.out.println(jsonObject);
 
-       // System.out.println((System.currentTimeMillis() - start) + "ms took the operation #2!"); //Gson 67ms
     }
 
 }

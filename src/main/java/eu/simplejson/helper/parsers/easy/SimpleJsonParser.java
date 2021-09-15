@@ -1,5 +1,5 @@
 
-package eu.simplejson.helper.parsers.vson;
+package eu.simplejson.helper.parsers.easy;
 
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.exception.JsonParseException;
@@ -9,7 +9,6 @@ import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.JsonNumber;
 import eu.simplejson.elements.JsonString;
 import eu.simplejson.helper.JsonUtils;
-import eu.simplejson.helper.other.JsonProvider;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -27,16 +26,13 @@ public class SimpleJsonParser {
 
     private boolean legacyRoot;
     private String buffer;
-    private JsonProvider[] dsfProviders;
 
     public SimpleJsonParser() {
-
     }
 
     public SimpleJsonParser(String string) {
         this.buffer = string;
         this.reset();
-        this.dsfProviders = new JsonProvider[0];
         this.legacyRoot = true;
     }
 
@@ -66,12 +62,10 @@ public class SimpleJsonParser {
     public JsonEntity parse() throws IOException {
         return this.parse(this.buffer);
     }
+
     public JsonEntity parse(String input) throws IOException {
 
-        if (this.dsfProviders == null) {
-            this.legacyRoot = true;
-            this.dsfProviders = new JsonProvider[0];
-        }
+        this.legacyRoot = true;
         this.buffer = input;
 
         this.reset();
@@ -129,7 +123,7 @@ public class SimpleJsonParser {
     private JsonEntity readDefaultValue() throws IOException {
         StringBuilder value = new StringBuilder();
         int first=current;
-        if (JsonEntity.isPunctuatedChar(first)) {
+        if (JsonUtils.isPunctuatedChar(first)) {
             throw error("Found a punctuator character '" + (char) first + "' when expecting a quoteless string (check your syntax)");
         }
         value.append((char)current);
@@ -164,7 +158,8 @@ public class SimpleJsonParser {
                         }
                 }
                 if (isEol) {
-                    return JsonUtils.parse(dsfProviders, value.toString().trim());
+                    System.out.println("EOL");
+                    return new JsonString(value.toString().trim());
                 }
             }
             value.append((char)current);
@@ -251,7 +246,7 @@ public class SimpleJsonParser {
                 }
             } else if (current < ' ') {
                 throw error("Name is not closed");
-            } else if (JsonEntity.isPunctuatedChar(current)) {
+            } else if (JsonUtils.isPunctuatedChar(current)) {
                 throw error("Found '" + (char)current + "' where a key name was expected (check your syntax or use quotes if the key name includes {}[],: or whitespace)");
             } else {
                 name.append((char)current);

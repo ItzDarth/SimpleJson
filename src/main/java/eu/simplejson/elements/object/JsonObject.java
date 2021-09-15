@@ -7,11 +7,10 @@ import eu.simplejson.elements.JsonArray;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.enums.CommentType;
 import eu.simplejson.enums.JsonType;
-import eu.simplejson.helper.parsers.json.JsonParser;
-import eu.simplejson.helper.parsers.vson.SimpleJsonParser;
+import eu.simplejson.helper.parsers.json.NormalJsonParser;
+import eu.simplejson.helper.parsers.easy.SimpleJsonParser;
 import javafx.util.Pair;
 import lombok.Getter;
-import lombok.SneakyThrows;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -42,9 +41,15 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
     private final Map<Integer, Pair<String[], CommentType>> comments;
 
     /**
+     * The headers of this config
+     */
+    private final List<String> header;
+
+    /**
      * Constructs an empty object
      */
     public JsonObject() {
+        this.header = new ArrayList<>();
         this.names = new ArrayList<>();
         this.values = new ArrayList<>();
         this.comments = new ConcurrentHashMap<>();
@@ -60,7 +65,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
         this();
 
         try {
-            JsonObject jsonObject = new JsonParser(input).parse().asJsonObject();
+            JsonObject jsonObject = new NormalJsonParser(input).parse().asJsonObject();
 
             this.table = new HashIndexTable();
             this.names = new LinkedList<>(jsonObject.getNames());
@@ -125,6 +130,11 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
 
             return jsonObject;
         }
+        return this;
+    }
+
+    public JsonObject addHeader(String line) {
+        this.header.add(line);
         return this;
     }
 
@@ -529,5 +539,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
             e.printStackTrace();
         }
     }
+
+
 
 }
