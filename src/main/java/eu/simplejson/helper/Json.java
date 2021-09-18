@@ -222,12 +222,15 @@ public class Json {
                 JsonEntity jsonEntity = jsonObject.get(key);
                 Object value = JsonUtils.getSerializedOrNull(this, jsonEntity, type);
 
+
                 if (type.isPrimitive() && value == null) {
                     Class<?> wrapperClassForPrimitive = JsonUtils.getWrapperClassForPrimitive(type);
                     value = JsonUtils.getSerializedOrNull(this, jsonEntity, wrapperClassForPrimitive);
                     if (value == null) {
                         continue;
                     }
+                } else if (value == null) {
+                    value = fromJson(jsonEntity, declaredField.getType());
                 }
 
                 declaredField.set(object, value);

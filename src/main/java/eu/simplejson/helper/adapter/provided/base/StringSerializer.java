@@ -10,6 +10,9 @@ public class StringSerializer extends JsonSerializer<String> {
 
     @Override
     public String deserialize(JsonEntity element) {
+        if (element.isNull()) {
+            return null;
+        }
         return element.asString();
     }
 

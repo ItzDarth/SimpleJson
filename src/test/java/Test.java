@@ -4,6 +4,9 @@ import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.enums.CommentType;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.helper.parsers.JsonParser;
+import master.MasterConfig;
+
+import java.io.File;
 
 public class Test {
 
@@ -13,12 +16,16 @@ public class Test {
 
     public Test() {
 
-        JsonObject jsonObject = new JsonObject();
+        JsonObject jsonObject = new JsonObject(new File("config.json"));
 
-        jsonObject.setFormat(JsonFormat.SIMPLE);
-        jsonObject.addProperty("name", "Lystx").comment("name", CommentType.BEHIND_VALUE, "This is the name");
+        MasterConfig as = jsonObject.getAs(MasterConfig.class);
 
-        System.out.println(jsonObject);
+        System.out.println(as.getMessages());
+        System.out.println("___________");
+        System.out.println(as.getProperties());
+
+        System.out.println(as);
+
 
     }
 

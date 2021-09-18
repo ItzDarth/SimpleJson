@@ -523,12 +523,11 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * with a given {@link JsonFormat}
      *
      * @param file the file to save it to
-     * @param format the format to save it with
      */
-    public void save(File file, JsonFormat format) {
+    public void save(File file) {
         try {
             if (!file.exists() && file.createNewFile()) {
-                this.save(file, format);
+                this.save(file);
                 return;
             }
             PrintWriter w = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8), true);
