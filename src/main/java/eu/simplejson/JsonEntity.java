@@ -3,12 +3,12 @@ package eu.simplejson;
 
 import eu.simplejson.elements.JsonArray;
 import eu.simplejson.elements.object.JsonObject;
-import eu.simplejson.helper.Json;
 import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.JsonNumber;
 import eu.simplejson.elements.JsonString;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.enums.JsonType;
+import eu.simplejson.helper.json.Json;
 import eu.simplejson.helper.parsers.WritingBuffer;
 import eu.simplejson.helper.parsers.json.NormalJsonWriter;
 import eu.simplejson.helper.parsers.easy.SimpleJsonWriter;
@@ -22,7 +22,7 @@ public abstract class JsonEntity implements Serializable {
 
     /**
      * The format of this entity
-     * changed by {@link Json} instance using {@link Json#setFormat(JsonFormat)}
+     * changed by {@link eu.simplejson.helper.json.Json} instance
      */
     @Setter
     protected JsonFormat format = JsonFormat.FORMATTED;
@@ -139,7 +139,7 @@ public abstract class JsonEntity implements Serializable {
      * Gets the {@link JsonType} of this entity
      * to identify what type this is
      */
-    public abstract JsonType getType();
+    public abstract JsonType jsonType();
 
     /**
      * Checks if this {@link JsonEntity} is a {@link JsonObject}
@@ -275,6 +275,17 @@ public abstract class JsonEntity implements Serializable {
     }
 
     /**
+     * Gets this {@link JsonEntity} as a custom object of your choice
+     *
+     * @param typeClass the type class of the object
+     * @param <T> the generic
+     * @return built object
+     */
+    public <T> T asCustom(Class<T> typeClass, Json json) {
+        return json.fromJson(this, typeClass);
+    }
+
+    /**
      * Gets this {@link JsonEntity} as {@link Long}
      */
     public long asLong() {
@@ -367,10 +378,10 @@ public abstract class JsonEntity implements Serializable {
 
             if (format != JsonFormat.SIMPLE) {
                 NormalJsonWriter jsonWriter = new NormalJsonWriter(format == JsonFormat.FORMATTED);
-                jsonWriter.save(this, buffer, 0);
+                jsonWriter.saveRecursive(this, buffer, 0);
             } else {
                 SimpleJsonWriter jsonWriter = new SimpleJsonWriter();
-                jsonWriter.save(null, this, buffer, 0, null, "", true);
+                jsonWriter.saveRecursive(this, buffer, 0, "", true);
             }
 
             buffer.flush();

@@ -3,7 +3,7 @@ package eu.simplejson.elements;
 
 import eu.simplejson.JsonEntity;
 import eu.simplejson.enums.JsonType;
-import eu.simplejson.helper.Json;
+import eu.simplejson.helper.JsonHelper;
 import lombok.Getter;
 
 import java.util.*;
@@ -25,16 +25,6 @@ public class JsonArray extends JsonEntity implements Iterable<JsonEntity> {
 
     public JsonArray(JsonArray array, boolean unmodifiable) {
         this.values = unmodifiable ? Collections.unmodifiableList(array.values) : new ArrayList<>(array.values);
-    }
-
-    /**
-     * Adds a value to this array
-     *
-     * @param value the value
-     * @return current array
-     */
-    public JsonArray add(Object value) {
-        return this.add(valueOf(value) == null ? Json.getInstance().toJson(value) : valueOf(value));
     }
 
     /**
@@ -94,7 +84,7 @@ public class JsonArray extends JsonEntity implements Iterable<JsonEntity> {
     }
 
     @Override
-    public JsonType getType() {
+    public JsonType jsonType() {
         return JsonType.ARRAY;
     }
 

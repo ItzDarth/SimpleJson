@@ -25,7 +25,7 @@ public class JsonString extends JsonEntity {
     }
 
     @Override
-    public JsonType getType() {
+    public JsonType jsonType() {
         return JsonType.STRING;
     }
 

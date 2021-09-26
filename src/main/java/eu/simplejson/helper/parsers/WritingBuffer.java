@@ -13,20 +13,17 @@ public class WritingBuffer extends Writer {
     private final Writer writer;
 
     /**
+     * The filling amount
+     */
+    private int fill;
+
+    /**
      * The current buffer chars
      */
     private final char[] buffer;
 
-    /**
-     * The filling amount
-     */
-    private int fill = 0;
-
-    public WritingBuffer(Writer writer) {
-        this(writer, 16);
-    }
-
     public WritingBuffer(Writer writer, int bufferSize) {
+        this.fill = 0;
         this.writer = writer;
         this.buffer = new char[bufferSize];
     }
@@ -38,20 +35,6 @@ public class WritingBuffer extends Writer {
         }
         this.buffer[fill++ ] =(char)c;
     }
-
-    @Override
-    public void write(char[] cbuf, int off, int len) throws IOException {
-        if (this.fill > this.buffer.length - len) {
-            this.flush();
-            if (len > this.buffer.length) {
-                this.writer.write(cbuf, off, len);
-                return;
-            }
-        }
-        System.arraycopy(cbuf, off, this.buffer, this.fill, len);
-        this.fill += len;
-    }
-
     @Override
     public void write(String str, int off, int len) throws IOException {
         if (this.fill > this.buffer.length - len) {
@@ -62,6 +45,19 @@ public class WritingBuffer extends Writer {
             }
         }
         str.getChars(off, off + len, this.buffer, this.fill);
+        this.fill += len;
+    }
+
+    @Override
+    public void write(char[] buff, int off, int len) throws IOException {
+        if (this.fill > this.buffer.length - len) {
+            this.flush();
+            if (len > this.buffer.length) {
+                this.writer.write(buff, off, len);
+                return;
+            }
+        }
+        System.arraycopy(buff, off, this.buffer, this.fill, len);
         this.fill += len;
     }
 

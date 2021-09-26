@@ -37,7 +37,7 @@ public class JsonLiteral extends JsonEntity {
     }
 
     @Override
-    public JsonType getType() {
+    public JsonType jsonType() {
         return this.value == Type.NULL ? JsonType.NULL : JsonType.BOOLEAN;
     }
 

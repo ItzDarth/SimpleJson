@@ -3,14 +3,15 @@ package eu.simplejson.helper.adapter.provided.number;
 import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.JsonNumber;
 import eu.simplejson.helper.adapter.JsonSerializer;
-import eu.simplejson.helper.Json;
+import eu.simplejson.helper.json.Json;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.reflect.Field;
 
 public class NumberSerializer extends JsonSerializer<Number> {
 
     @Override
-    public Number deserialize(JsonEntity element) {
+    public Number deserialize(JsonEntity element, Field field, Json json) {
         if (element.isDouble()) {
             return element.asDouble();
         } else if (element.isInt()) {
@@ -28,7 +29,7 @@ public class NumberSerializer extends JsonSerializer<Number> {
     }
 
     @Override
-    public JsonEntity serialize(Number obj, Json json) {
+    public JsonEntity serialize(Number obj, Json json, Field field) {
         if (obj instanceof AtomicInteger) {
             AtomicInteger atomicInteger = (AtomicInteger)obj;
             return new JsonNumber(atomicInteger.get());

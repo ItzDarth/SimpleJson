@@ -37,7 +37,7 @@ public class JsonNumber extends JsonEntity {
     }
 
     @Override
-    public JsonType getType() {
+    public JsonType jsonType() {
         return JsonType.NUMBER;
     }
 

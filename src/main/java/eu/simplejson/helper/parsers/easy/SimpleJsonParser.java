@@ -8,12 +8,13 @@ import eu.simplejson.elements.JsonArray;
 import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.JsonNumber;
 import eu.simplejson.elements.JsonString;
-import eu.simplejson.helper.JsonUtils;
+import eu.simplejson.helper.JsonHelper;
 
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
+//TODO DOCUMENTATION
 public class SimpleJsonParser {
 
     private Reader reader;
@@ -42,7 +43,7 @@ public class SimpleJsonParser {
 
     public static String readToEnd(Reader reader) throws IOException {
         int n;
-        char[] part = new char[8*1024];
+        char[] part = new char[8 * 1024];
         StringBuilder sb = new StringBuilder();
         while ((n = reader.read(part, 0, part.length)) != -1) {
             sb.append(part, 0, n);
@@ -51,7 +52,7 @@ public class SimpleJsonParser {
     }
 
     public void reset() {
-        this.index = lineOffset=current=0;
+        this.index = lineOffset = current = 0;
         this.line = 1;
         this.peek = new StringBuilder();
         this.reader = new StringReader(buffer);
@@ -122,12 +123,12 @@ public class SimpleJsonParser {
 
     private JsonEntity readDefaultValue() throws IOException {
         StringBuilder value = new StringBuilder();
-        int first=current;
-        if (JsonUtils.isPunctuatedChar(first)) {
+        int first = current;
+        if (JsonHelper.isPunctuatedChar(first)) {
             throw error("Found a punctuator character '" + (char) first + "' when expecting a quoteless string (check your syntax)");
         }
-        value.append((char)current);
-        for (;;) {
+        value.append((char) current);
+        for (; ; ) {
             read();
             boolean isEol = this.current < 0 || this.current == '\r' || this.current == '\n';
             if (isEol || this.current == ',' ||
@@ -162,7 +163,7 @@ public class SimpleJsonParser {
                     return new JsonString(value.toString().trim());
                 }
             }
-            value.append((char)current);
+            value.append((char) current);
         }
     }
 
@@ -214,7 +215,7 @@ public class SimpleJsonParser {
                 throw this.expected("':'");
             }
             this.skip();
-            object.add(name, this.readValue());
+            object.addProperty(name, this.readValue());
             this.skip();
             if (this.readIf(',')) {
                 this.skip();
@@ -229,15 +230,14 @@ public class SimpleJsonParser {
         }
 
         StringBuilder name = new StringBuilder();
-        int space =- 1, start = index;
+        int space = -1, start = index;
         while (true) {
             if (this.current == ':') {
                 if (name.length() == 0) {
                     throw error("Found ':' but no key name (for an empty key name use quotes)");
-                }
-                else if (space >= 0 && space != name.length()) {
-                     index = start + space;
-                     throw error("Found whitespace in your key name (use quotes to include)");
+                } else if (space >= 0 && space != name.length()) {
+                    index = start + space;
+                    throw error("Found whitespace in your key name (use quotes to include)");
                 }
                 return name.toString();
             } else if (isWhiteSpace(current)) {
@@ -246,10 +246,10 @@ public class SimpleJsonParser {
                 }
             } else if (current < ' ') {
                 throw error("Name is not closed");
-            } else if (JsonUtils.isPunctuatedChar(current)) {
-                throw error("Found '" + (char)current + "' where a key name was expected (check your syntax or use quotes if the key name includes {}[],: or whitespace)");
+            } else if (JsonHelper.isPunctuatedChar(current)) {
+                throw error("Found '" + (char) current + "' where a key name was expected (check your syntax or use quotes if the key name includes {}[],: or whitespace)");
             } else {
-                name.append((char)current);
+                name.append((char) current);
             }
             this.read();
         }
@@ -258,7 +258,7 @@ public class SimpleJsonParser {
     private String readMultiLineString() throws IOException {
 
         StringBuilder sb = new StringBuilder();
-        int triple=0;
+        int triple = 0;
 
         int indent = index - lineOffset - 4;
 
@@ -277,8 +277,7 @@ public class SimpleJsonParser {
         while (true) {
             if (this.current < 0) {
                 throw error("Bad multiline string");
-            }
-            else if (this.current == '\'') {
+            } else if (this.current == '\'') {
                 triple++;
                 this.read();
                 if (triple == 3) {
@@ -301,7 +300,7 @@ public class SimpleJsonParser {
                 this.skipIndent(indent);
             } else {
                 if (this.current != '\r') {
-                    sb.append((char)current);
+                    sb.append((char) current);
                 }
                 this.read();
             }
@@ -309,8 +308,8 @@ public class SimpleJsonParser {
     }
 
     private void skipIndent(int indent) throws IOException {
-        while (indent-->0) {
-            if (isWhiteSpace(current) && current!='\n') {
+        while (indent-- > 0) {
+            if (isWhiteSpace(current) && current != '\n') {
                 this.read();
             } else {
                 break;
@@ -327,7 +326,7 @@ public class SimpleJsonParser {
         this.read();
         this.startCapture();
         while (this.current != exitCh) {
-            if (this.current =='\\') {
+            if (this.current == '\\') {
                 this.readEscape();
             } else if (current < 0x20) {
                 throw expected("valid string character");
@@ -349,12 +348,12 @@ public class SimpleJsonParser {
     private void readEscape() throws IOException {
         this.pauseCapture();
         this.read();
-        switch(current) {
+        switch (current) {
             case '"':
             case '\'':
             case '/':
             case '\\':
-                captureBuffer.append((char)current);
+                captureBuffer.append((char) current);
                 break;
             case 'b':
                 captureBuffer.append('\b');
@@ -372,20 +371,20 @@ public class SimpleJsonParser {
                 captureBuffer.append('\t');
                 break;
             case 'u':
-                char[] hexChars=new char[4];
-                for (int i=0; i<4; i++) {
+                char[] hexChars = new char[4];
+                for (int i = 0; i < 4; i++) {
                     this.read();
                     if (!this.isHexDigit()) {
                         throw expected("hexadecimal digit");
                     }
-                    hexChars[i]=(char)current;
+                    hexChars[i] = (char) current;
                 }
-                captureBuffer.append((char)Integer.parseInt(new String(hexChars), 16));
+                captureBuffer.append((char) Integer.parseInt(new String(hexChars), 16));
                 break;
             default:
                 throw expected("valid escape sequence");
         }
-        capture=true;
+        capture = true;
         read();
     }
 
@@ -420,7 +419,7 @@ public class SimpleJsonParser {
             if (idx >= len || !isDigit(value.charAt(idx++))) {
                 return null;
             }
-            while (idx < len && isDigit(value.charAt(idx))){
+            while (idx < len && isDigit(value.charAt(idx))) {
                 idx++;
             }
         }
@@ -478,12 +477,11 @@ public class SimpleJsonParser {
                 do {
                     this.read();
                 } while (this.current >= 0 && this.current != '\n');
-            }
-            else if (this.current == '/' && this.peek() == '*') {
+            } else if (this.current == '/' && this.peek() == '*') {
                 read();
                 do {
                     read();
-                } while (current>=0 && !(current=='*' && peek()=='/'));
+                } while (current >= 0 && !(current == '*' && peek() == '/'));
                 this.read();
                 this.read();
 
@@ -500,7 +498,7 @@ public class SimpleJsonParser {
             if (c < 0) {
                 return c;
             }
-            peek.append((char)c);
+            peek.append((char) c);
         }
         return peek.charAt(idx);
     }
@@ -512,7 +510,7 @@ public class SimpleJsonParser {
     private void read() throws IOException {
         if (this.current == '\n') {
             this.line++;
-            this.lineOffset=index;
+            this.lineOffset = index;
         }
 
         if (peek.length() > 0) {
@@ -528,7 +526,7 @@ public class SimpleJsonParser {
 
         this.index++;
         if (this.capture) {
-            this.captureBuffer.append((char)current);
+            this.captureBuffer.append((char) current);
         }
     }
 
@@ -537,13 +535,13 @@ public class SimpleJsonParser {
             this.captureBuffer = new StringBuilder();
         }
         this.capture = true;
-        this.captureBuffer.append((char)current);
+        this.captureBuffer.append((char) current);
     }
 
     private void pauseCapture() {
         int len = this.captureBuffer.length();
         if (len > 0) {
-            this.captureBuffer.deleteCharAt(len-1);
+            this.captureBuffer.deleteCharAt(len - 1);
         }
         this.capture = false;
     }
@@ -565,13 +563,13 @@ public class SimpleJsonParser {
         if (this.isEndOfText()) {
             return error("Unexpected end of input");
         }
-        return error("Expected "+expected);
+        return error("Expected " + expected);
     }
 
     private JsonParseException error(String message) {
-        int column = index-lineOffset;
+        int column = index - lineOffset;
         int offset = isEndOfText() ? index : index - 1;
-        return new JsonParseException(message, offset, line, column-1);
+        return new JsonParseException(message, offset, line, column - 1);
     }
 
     public static boolean isWhiteSpace(int ch) {
@@ -579,7 +577,7 @@ public class SimpleJsonParser {
     }
 
     private boolean isWhiteSpace() {
-        return isWhiteSpace((char)current);
+        return isWhiteSpace((char) current);
     }
 
     private boolean isHexDigit() {

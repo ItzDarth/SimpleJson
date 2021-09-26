@@ -2,22 +2,15 @@
 package eu.simplejson.elements.object;
 
 import eu.simplejson.JsonEntity;
-import eu.simplejson.helper.Json;
-import eu.simplejson.elements.JsonArray;
 import eu.simplejson.enums.JsonFormat;
-import eu.simplejson.enums.CommentType;
 import eu.simplejson.enums.JsonType;
+import eu.simplejson.helper.parsers.JsonParser;
 import eu.simplejson.helper.parsers.json.NormalJsonParser;
-import eu.simplejson.helper.parsers.easy.SimpleJsonParser;
-import javafx.util.Pair;
-import lombok.Getter;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
-@Getter
 public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
 
     /**
@@ -36,23 +29,11 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
     private HashIndexTable table;
 
     /**
-     * All comments (TODO: READ COMMENTS)
-     */
-    private final Map<Integer, Pair<String[], CommentType>> comments;
-
-    /**
-     * The headers of this config
-     */
-    private final List<String> header;
-
-    /**
      * Constructs an empty object
      */
     public JsonObject() {
-        this.header = new ArrayList<>();
         this.names = new ArrayList<>();
         this.values = new ArrayList<>();
-        this.comments = new ConcurrentHashMap<>();
         this.table = new HashIndexTable();
     }
 
@@ -68,8 +49,8 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
             JsonObject jsonObject = new NormalJsonParser(input).parse().asJsonObject();
 
             this.table = new HashIndexTable();
-            this.names = new LinkedList<>(jsonObject.getNames());
-            this.values = new LinkedList<>(jsonObject.getValues());
+            this.names = new LinkedList<>(jsonObject.names);
+            this.values = new LinkedList<>(jsonObject.values);
 
             for (int i = 0; i < names.size(); i++) {
                 table.add(names.get(i), i);
@@ -92,12 +73,12 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
         try {
             JsonObject jsonObject = new JsonObject();
             if (file.exists()) {
-                jsonObject = new SimpleJsonParser(new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))).parse().asJsonObject();
+                jsonObject = new JsonParser(format).parse(new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))).asJsonObject();
             }
 
             this.table = new HashIndexTable();
-            this.names = new LinkedList<>(jsonObject.getNames());
-            this.values = new LinkedList<>(jsonObject.getValues());
+            this.names = new LinkedList<>(jsonObject.names);
+            this.values = new LinkedList<>(jsonObject.values);
 
             for (int i = 0; i < names.size(); i++) {
                 table.add(names.get(i), i);
@@ -115,26 +96,15 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @param value the object to fill this json object with
      * @return created object
      */
-    public JsonObject fill(Object value) {
-        JsonEntity jsonEntity = Json.getInstance().toJson(value);
+    public JsonObject addAll(JsonObject value) {
 
-        if (jsonEntity.isJsonObject()) {
-            JsonObject jsonObject = jsonEntity.asJsonObject();
-
-            this.names = jsonObject.getNames();
-            this.values = jsonObject.getValues();
-            this.table = jsonObject.getTable();
-            for (int i = 0; i < names.size(); i++) {
-                table.add(names.get(i), i);
-            }
-
-            return jsonObject;
+        this.names = value.names;
+        this.values = value.values;
+        this.table = value.table;
+        for (int i = 0; i < names.size(); i++) {
+            table.add(names.get(i), i);
         }
-        return this;
-    }
 
-    public JsonObject addHeader(String line) {
-        this.header.add(line);
         return this;
     }
 
@@ -146,7 +116,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @return current object
      */
     public JsonObject addProperty(String key, String value) {
-        return this.add(key, JsonEntity.valueOf(value));
+        return this.addProperty(key, JsonEntity.valueOf(value));
     }
 
     /**
@@ -157,7 +127,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @return current object
      */
     public JsonObject addProperty(String key, Number value) {
-        return this.add(key, JsonEntity.valueOf(value));
+        return this.addProperty(key, JsonEntity.valueOf(value));
     }
 
     /**
@@ -168,19 +138,9 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @return current object
      */
     public JsonObject addProperty(String key, boolean value) {
-        return this.add(key, JsonEntity.valueOf(value));
+        return this.addProperty(key, JsonEntity.valueOf(value));
     }
 
-    /**
-     * Adds a custom {@link Object} to this {@link JsonObject}
-     *
-     * @param key the key
-     * @param value the value to store
-     * @return current object
-     */
-    public JsonObject addSerialized(String key, Object value) {
-        return this.add(key, Json.getInstance().toJson(value));
-    }
 
     /**
      * Adds a {@link JsonEntity} to this entity
@@ -190,7 +150,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @param value the value to store
      * @return current object
      */
-    public JsonObject add(String key, JsonEntity value) {
+    public JsonObject addProperty(String key, JsonEntity value) {
         table.add(key, names.size());
         names.add(key);
         values.add(value);
@@ -206,7 +166,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @param value the value to store
      * @return current object
      */
-    public JsonObject set(String key, JsonEntity value) {
+    public JsonObject setProperty(String key, JsonEntity value) {
         int index = indexOf(key);
         if (index !=- 1) {
             values.set(index, value);
@@ -227,7 +187,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @return current object
      */
     public JsonObject setProperty(String key, String value) {
-        return this.set(key, JsonEntity.valueOf(value));
+        return this.setProperty(key, JsonEntity.valueOf(value));
     }
 
     /**
@@ -239,7 +199,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @return current object
      */
     public JsonObject setProperty(String key, Number value) {
-        return this.set(key, JsonEntity.valueOf(value));
+        return this.setProperty(key, JsonEntity.valueOf(value));
     }
 
     /**
@@ -251,19 +211,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      * @return current object
      */
     public JsonObject setProperty(String key, boolean value) {
-        return this.set(key, JsonEntity.valueOf(value));
-    }
-
-    /**
-     * Sets a custom {@link Object} to this {@link JsonObject}
-     * If a value already exists it will simply override the value
-     *
-     * @param key the key
-     * @param value the value to store
-     * @return current object
-     */
-    public JsonObject setSerialized(String key, Object value) {
-        return this.set(key, Json.getInstance().toJson(value));
+        return this.setProperty(key, JsonEntity.valueOf(value));
     }
 
     /**
@@ -280,17 +228,6 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
             names.remove(index);
             values.remove(index);
         }
-    }
-
-    /**
-     * Gets a raw {@link Object} stored under a given eky
-     *
-     * @param key the key
-     * @return the object or null if nothing matched the default objects
-     */
-    public Object getObject(String key) {
-        JsonEntity value = this.get(key);
-        return value.asObject();
     }
 
     /**
@@ -319,29 +256,6 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
     }
 
     /**
-     * Gets an Object stored under a given key as a custom object
-     *
-     * @param key the key where its stored
-     * @param tClass the type class
-     * @param <T> the generic
-     * @return created object or null if errors occurred
-     */
-    public <T> T getObject(String key, Class<T> tClass) {
-        return Json.getInstance().fromJson(this.get(key), tClass);
-    }
-
-    /**
-     * Gets this whole {@link JsonObject} as a custom object
-     *
-     * @param tClass the type class of the object you want
-     * @param <T> the generic
-     * @return created object or null if errors occurred
-     */
-    public <T> T getAs(Class<T> tClass) {
-        return Json.getInstance().fromJson(this, tClass);
-    }
-
-    /**
      * Checks if this object contains a key
      *
      * @param key the key
@@ -360,92 +274,12 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
     }
 
     /**
-     * Gets a {@link Integer} stored under a given key
-     *
-     * @param name the key
-     * @return int or default value
-     */
-    public int getInteger(String name) {
-        return !this.has(name) ? -1 : this.get(name).asInt();
-    }
-
-    /**
-     * Gets a {@link Long} stored under a given key
-     *
-     * @param name the key
-     * @return long or default value
-     */
-    public long getLong(String name) {
-        return !this.has(name) ? -1 : this.get(name).asLong();
-    }
-
-    /**
-     * Gets a {@link Float} stored under a given key
-     *
-     * @param name the key
-     * @return float or default value
-     */
-    public float getFloat(String name) {
-        return !this.has(name) ? -1 : this.get(name).asFloat();
-    }
-
-    /**
-     * Gets a {@link Double} stored under a given key
-     *
-     * @param name the key
-     * @return double or default value
-     */
-    public double getDouble(String name) {
-        return !this.has(name) ? -1 : this.get(name).asDouble();
-    }
-
-    /**
-     * Gets a {@link Short} stored under a given key
-     *
-     * @param name the key
-     * @return short or default value
-     */
-    public short getShort(String name) {
-        return !this.has(name) ? -1 : this.get(name).asShort();
-    }
-
-    /**
-     * Gets a {@link Byte} stored under a given key
-     *
-     * @param name the key
-     * @return byte or default value
-     */
-    public byte getByte(String name) {
-        return !this.has(name) ? -1 : this.get(name).asByte();
-    }
-
-    /**
-     * Gets a {@link Boolean} stored under a given key
-     *
-     * @param name the key
-     * @return boolean or default value
-     */
-    public boolean getBoolean(String name) {
-        return this.has(name) && this.get(name).asBoolean();
-    }
-
-    /**
-     * Gets a {@link String} stored under a given key
-     *
-     * @param key the key
-     * @return String or default value
-     */
-    public String getString(String key) {
-        return !this.has(key) ? null : this.get(key).asString();
-    }
-
-    /**
      * Gets a {@link Set} containing all the keys of this object
      */
     public Set<String> keySet() {
         Set<String> keys = new HashSet<>();
         for (int i = 0; i < this.size(); i++) {
-            keys.add(this.getNames().get(i));
+            keys.add(this.names.get(i));
         }
         return keys;
     }
@@ -466,18 +300,18 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
 
     @Override
     public Iterator<JsonEntry> iterator() {
-        Iterator<String> namesIterator = names.iterator();
-        Iterator<JsonEntity> valuesIterator = values.iterator();
+        Iterator<String> names = this.names.iterator();
+        Iterator<JsonEntity> values = this.values.iterator();
         return new Iterator<JsonEntry>() {
 
-            public boolean hasNext() {
-                return namesIterator.hasNext();
+            public JsonEntry next() {
+                JsonEntity value = values.next();
+                String name = names.next();
+                return new JsonEntry(name, value);
             }
 
-            public JsonEntry next() {
-                String name = namesIterator.next();
-                JsonEntity value = valuesIterator.next();
-                return new JsonEntry(name, value);
+            public boolean hasNext() {
+                return names.hasNext();
             }
 
             public void remove() {
@@ -486,25 +320,8 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
         };
     }
 
-    /**
-     * Adds a comment to this {@link JsonObject} behind a given value stored
-     *
-     * @param key the key of the object you want to comment on
-     * @param commentType the type of the comment
-     * @param comment the lines of the comment
-     * @return current comment
-     */
-    public JsonObject comment(String key, CommentType commentType, String... comment) {
-        if (this.get(key) instanceof JsonObject || this.get(key) instanceof JsonArray) {
-            throw new UnsupportedOperationException("Comments are not available for JsonObjects and JsonArrays at the moment");
-        }
-        this.comments.put(this.indexOf(key), new Pair<>(comment, commentType));
-        return this;
-    }
-
-
     @Override
-    public JsonType getType() {
+    public JsonType jsonType() {
         return JsonType.OBJECT;
     }
 

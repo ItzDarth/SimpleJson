@@ -4,13 +4,15 @@ import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.JsonString;
 import eu.simplejson.helper.adapter.JsonSerializer;
-import eu.simplejson.helper.Json;
+import eu.simplejson.helper.json.Json;
+
+import java.lang.reflect.Field;
 
 public class LiteralSerializer extends JsonSerializer<JsonLiteral> {
 
 
     @Override
-    public JsonLiteral deserialize(JsonEntity element) {
+    public JsonLiteral deserialize(JsonEntity element, Field field, Json json) {
 
         if (element.asString().equals("null") || element.equals(JsonLiteral.NULL)) {
             return (JsonLiteral) JsonLiteral.NULL;
@@ -25,7 +27,7 @@ public class LiteralSerializer extends JsonSerializer<JsonLiteral> {
     }
 
     @Override
-    public JsonEntity serialize(JsonLiteral obj,Json json) {
+    public JsonEntity serialize(JsonLiteral obj, Json json, Field field) {
         return new JsonString(obj.toString());
     }
 }
