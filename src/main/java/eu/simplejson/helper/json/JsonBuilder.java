@@ -9,6 +9,7 @@ import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.helper.JsonHelper;
 import eu.simplejson.helper.adapter.JsonSerializer;
 import eu.simplejson.helper.adapter.provided.base.BooleanSerializer;
+import eu.simplejson.helper.adapter.provided.base.ClassSerializer;
 import eu.simplejson.helper.adapter.provided.base.EnumSerializer;
 import eu.simplejson.helper.adapter.provided.base.StringSerializer;
 import eu.simplejson.helper.adapter.provided.extra.*;
@@ -63,6 +64,19 @@ public class JsonBuilder {
         this.serializeNulls = false;
         this.serializeSameFieldInstance = 10;
         this.checkSerializersForSubClasses = true;
+    }
+
+    /**
+     * Uses the recommended settings
+     *
+     * @return current json
+     */
+    public JsonBuilder recommendedSettings() {
+        this.format = JsonFormat.FORMATTED;
+        this.serializeNulls = true;
+        this.serializeSameFieldInstance = 10;
+        this.checkSerializersForSubClasses = true;
+        return this;
     }
 
     /**
@@ -165,6 +179,7 @@ public class JsonBuilder {
             //Registering default serializers
             this.registerSerializer(String.class, new StringSerializer());
             this.registerSerializer(Boolean.class, new BooleanSerializer());
+            this.registerSerializer(Class.class, new ClassSerializer());
 
             //Numbers
             this.registerSerializer(Number.class, new NumberSerializer());
@@ -442,9 +457,16 @@ public class JsonBuilder {
             } else if (json instanceof JsonString && typeClass == String.class) {
                 object = (T) json.asString();
             } else if (json instanceof JsonArray && Iterable.class.isAssignableFrom(typeClass)) {
-                JsonArray jsonArray = new JsonArray();
                 List<T> list = new ArrayList<>();
-                for (JsonEntity entity : jsonArray) {
+                for (JsonEntity entity : ((JsonArray)json)) {
+                    Object obj = entity.asObject();
+
+                    if (obj == null) {
+                        continue;
+                    }
+
+                    list.add((T) obj);
+                    System.out.println(entity);
                     //TODO
                 }
                 object = (T) list;

@@ -1,34 +1,67 @@
+import com.google.gson.Gson;
+import eu.simplejson.JsonEntity;
+import eu.simplejson.elements.JsonArray;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.enums.JsonFormat;
+import eu.simplejson.helper.annotation.SerializedField;
+import eu.simplejson.helper.annotation.SerializedObject;
+import eu.simplejson.helper.annotation.WrapperClass;
+import eu.simplejson.helper.exlude.ExcludeStrategy;
+import eu.simplejson.helper.json.Json;
+import eu.simplejson.helper.json.JsonBuilder;
 import eu.simplejson.helper.parsers.JsonParser;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.lang.reflect.Field;
+import java.util.List;
+import java.util.UUID;
 
 public class Test {
 
     public static void main(String[] args) {
-        JsonObject jsonObject = new JsonParser(JsonFormat.RAW).parse("{\n" +
-                "    \"glossary\": {\n" +
-                "        \"title\": \"example glossary\",\n" +
-                "\t\t\"GlossDiv\": {\n" +
-                "            \"title\": \"S\",\n" +
-                "\t\t\t\"GlossList\": {\n" +
-                "                \"GlossEntry\": {\n" +
-                "                    \"ID\": \"SGML\",\n" +
-                "\t\t\t\t\t\"SortAs\": \"SGML\",\n" +
-                "\t\t\t\t\t\"GlossTerm\": \"Standard Generalized Markup Language\",\n" +
-                "\t\t\t\t\t\"Acronym\": \"SGML\",\n" +
-                "\t\t\t\t\t\"Abbrev\": \"ISO 8879:1986\",\n" +
-                "\t\t\t\t\t\"GlossDef\": {\n" +
-                "                        \"para\": \"A meta-markup language, used to create markup languages such as DocBook.\",\n" +
-                "\t\t\t\t\t\t\"GlossSeeAlso\": [\"GML\", \"XML\"]\n" +
-                "                    },\n" +
-                "\t\t\t\t\t\"GlossSee\": \"markup\"\n" +
-                "                }\n" +
-                "            }\n" +
-                "        }\n" +
-                "    }\n" +
-                "}").asJsonObject();
 
-        jsonObject.setFormat(JsonFormat.SIMPLE);
-        System.out.println(jsonObject);
+
+        Json json = JsonBuilder.newBuilder().recommendedSettings().build();
+/*
+        Example example = new Example("Luca", UUID.randomUUID(), new SimpleText("Text"));
+
+        JsonEntity entity = json.toJson(example);
+*/
+        Gson gson = new Gson();
+        System.out.println(json.toJson(gson));
+
+
+        System.out.println("==============");
+        System.out.println(new JsonObject(gson.toJson(gson)));
+
+    }
+
+
+    @Getter @AllArgsConstructor
+    public static class Example {
+
+        @SerializedField(name = "example_name", ignore = true)
+        private final String name;
+
+        private final UUID uniqueId;
+
+        @SerializedField(wrapperClasses = @WrapperClass(interfaceClass = Text.class, wrapperClass = SimpleText.class))
+        private final Text text;
+
+    }
+
+
+    public interface Text {
+
+        String getValue();
+
+    }
+
+    @Getter @AllArgsConstructor
+    public static class SimpleText implements Text {
+
+        private final String value;
+
     }
 }
