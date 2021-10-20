@@ -7,6 +7,7 @@ import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.elements.object.JsonEntry;
 import eu.simplejson.enums.JsonType;
+import eu.simplejson.helper.json.JsonBuilder;
 import lombok.AllArgsConstructor;
 
 import java.io.IOException;
@@ -47,6 +48,14 @@ public class NormalJsonWriter {
     public void saveRecursive(JsonEntity value, Writer tw, int level) throws IOException {
         boolean following = false;
 
+        boolean writeArraysSingleLined;
+
+        if (JsonBuilder.lastBuild() == null) {
+            writeArraysSingleLined = false;
+        } else {
+            writeArraysSingleLined = JsonBuilder.lastBuild().isWriteArraysSingleLined();
+        }
+
         switch (value.jsonType()) {
             case OBJECT:
 
@@ -84,27 +93,59 @@ public class NormalJsonWriter {
                 break;
             case ARRAY:
                 JsonArray arr = value.asJsonArray();
-                int n = arr.size();
-                if (n > 0) {
+                int size = arr.size();
+                JsonArray jsonArray = value.asJsonArray();
+                boolean allow = true;
+                for (JsonEntity entity : jsonArray) {
+                    if (entity != null) {
+                        if (!entity.isPrimitive()) {
+                            allow = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (size > 0 && !jsonArray.isEmpty() && !(allow && writeArraysSingleLined)) {
                     this.newLine(tw, level);
                 }
-                tw.write('[');
-                for (int i = 0; i < n; i++) {
-                    if (following) {
-                        tw.write(",");
+
+                if (jsonArray.isEmpty()) {
+                    tw.write("[]");
+                } else {
+                    if (allow && writeArraysSingleLined) {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append(" ");
+                        stringBuilder.append("[");
+
+                        for (int i = 0; i < size; i++) {
+                            JsonEntity entity = jsonArray.get(i);
+                            stringBuilder.append(entity.toString());
+                            if ((i + 1) != size) {
+                                stringBuilder.append(", ");
+                            }
+                        }
+                        stringBuilder.append("]");
+                        tw.write(stringBuilder.toString());
+                    } else {
+                        tw.write('[');
+                        for (int i = 0; i < size; i++) {
+                            if (following) {
+                                tw.write(",");
+                            }
+                            JsonEntity v = arr.get(i);
+                            JsonType vType = v.jsonType();
+                            if (vType != JsonType.ARRAY && vType != JsonType.OBJECT) {
+                                this.newLine(tw, level + 1);
+                            }
+                            this.saveRecursive(v, tw, level + 1);
+                            following = true;
+                        }
+                        if (following) {
+                            this.newLine(tw, level);
+                        }
+                        tw.write(']');
                     }
-                    JsonEntity v = arr.get(i);
-                    JsonType vType = v.jsonType();
-                    if (vType!= JsonType.ARRAY && vType != JsonType.OBJECT) {
-                        this.newLine(tw, level+1);
-                    }
-                    this.saveRecursive(v, tw, level+1);
-                    following = true;
                 }
-                if (following) {
-                    this.newLine(tw, level);
-                }
-                tw.write(']');
                 break;
             case STRING:
                 tw.write('"');

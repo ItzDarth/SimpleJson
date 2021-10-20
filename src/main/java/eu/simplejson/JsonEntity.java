@@ -142,6 +142,11 @@ public abstract class JsonEntity implements Serializable {
     public abstract JsonType jsonType();
 
     /**
+     * If this json is type for a primitive
+     */
+    public abstract boolean isPrimitive();
+
+    /**
      * Checks if this {@link JsonEntity} is a {@link JsonObject}
      */
     public boolean isJsonObject() {

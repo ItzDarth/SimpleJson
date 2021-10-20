@@ -37,6 +37,18 @@ public class JsonBuilder {
     }
 
     /**
+     * Gets the last build instance
+     */
+    public static Json lastBuild() {
+        return lastBuild;
+    }
+
+    /**
+     * The last built json instance
+     */
+    private static Json lastBuild;
+
+    /**
      * The format for printing
      */
     private JsonFormat format;
@@ -59,9 +71,15 @@ public class JsonBuilder {
      */
     private boolean checkSerializersForSubClasses;
 
+    /**
+     * If primitive arrays should be written like this : [1, 2, 3, 4, 5, 6]
+     */
+    private boolean writeArraysSingleLined;
+
     private JsonBuilder() {
         this.format = JsonFormat.RAW;
         this.serializeNulls = false;
+        this.writeArraysSingleLined = false;
         this.serializeSameFieldInstance = 10;
         this.checkSerializersForSubClasses = true;
     }
@@ -74,6 +92,7 @@ public class JsonBuilder {
     public JsonBuilder recommendedSettings() {
         this.format = JsonFormat.FORMATTED;
         this.serializeNulls = true;
+        this.writeArraysSingleLined = true;
         this.serializeSameFieldInstance = 10;
         this.checkSerializersForSubClasses = true;
         return this;
@@ -83,11 +102,22 @@ public class JsonBuilder {
      * Sets the amount of times a field of an object
      * will be serialized if it's the same type as the class
      * (to prevent StackOverFlow)
+     *
      * @param times the amount
      * @return current json
      */
     public JsonBuilder serializeSameFieldInstance(int times) {
         this.serializeSameFieldInstance = times;
+        return this;
+    }
+
+    /**
+     * Sets {@link JsonBuilder#writeArraysSingleLined} to true
+     *
+     * @return current builder
+     */
+    public JsonBuilder writeArraysSingleLined(boolean state) {
+        this.writeArraysSingleLined = state;
         return this;
     }
 
@@ -127,7 +157,9 @@ public class JsonBuilder {
      * Builds this instance
      */
     public Json build() {
-        return new JsonImpl(format, serializeNulls, serializeSameFieldInstance, checkSerializersForSubClasses);
+        Json json = new JsonImpl(format, serializeNulls, serializeSameFieldInstance, checkSerializersForSubClasses, writeArraysSingleLined);
+        lastBuild = json;
+        return  json;
     }
 
     @Getter
@@ -166,11 +198,17 @@ public class JsonBuilder {
          */
         private final boolean checkSerializersForSubClasses;
 
-        private JsonImpl(JsonFormat format, boolean serializeNulls, int serializeSameFieldInstance, boolean checkSerializersForSubClasses) {
+        /**
+         * If primitive arrays should be written like this : [1, 2, 3, 4, 5, 6]
+         */
+        private final boolean writeArraysSingleLined;
+
+        private JsonImpl(JsonFormat format, boolean serializeNulls, int serializeSameFieldInstance, boolean checkSerializersForSubClasses, boolean writeArraysSingleLined) {
             this.format = format;
             this.serializeNulls = serializeNulls;
             this.serializeSameFieldInstance = serializeSameFieldInstance;
             this.checkSerializersForSubClasses = checkSerializersForSubClasses;
+            this.writeArraysSingleLined = writeArraysSingleLined;
 
             this.registeredSerializers = new ConcurrentHashMap<>();
             this.excludeStrategies = new ArrayList<>();

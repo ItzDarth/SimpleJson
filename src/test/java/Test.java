@@ -12,8 +12,12 @@ import eu.simplejson.helper.json.JsonBuilder;
 import eu.simplejson.helper.parsers.JsonParser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import objects.IPlayer;
+import objects.Player;
 
+import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,47 +25,17 @@ public class Test {
 
     public static void main(String[] args) {
 
+        Json helper = JsonBuilder.newBuilder().recommendedSettings().build();
 
-        Json json = JsonBuilder.newBuilder().recommendedSettings().build();
-/*
-        Example example = new Example("Luca", UUID.randomUUID(), new SimpleText("Text"));
-
-        JsonEntity entity = json.toJson(example);
-*/
-        Gson gson = new Gson();
-        System.out.println(json.toJson(gson));
+        IPlayer player = new Player("Lystx", UUID.randomUUID(), System.currentTimeMillis(), () -> System.out.println("NICE"));
 
 
-        System.out.println("==============");
-        System.out.println(new JsonObject(gson.toJson(gson)));
+        JsonEntity entity = helper.toJson(player);
 
+        System.out.println(entity);
     }
 
 
-    @Getter @AllArgsConstructor
-    public static class Example {
-
-        @SerializedField(name = "example_name", ignore = true)
-        private final String name;
-
-        private final UUID uniqueId;
-
-        @SerializedField(wrapperClasses = @WrapperClass(interfaceClass = Text.class, wrapperClass = SimpleText.class))
-        private final Text text;
-
-    }
 
 
-    public interface Text {
-
-        String getValue();
-
-    }
-
-    @Getter @AllArgsConstructor
-    public static class SimpleText implements Text {
-
-        private final String value;
-
-    }
 }

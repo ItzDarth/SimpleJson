@@ -159,7 +159,6 @@ public class SimpleJsonParser {
                         }
                 }
                 if (isEol) {
-                    System.out.println("EOL");
                     return new JsonString(value.toString().trim());
                 }
             }

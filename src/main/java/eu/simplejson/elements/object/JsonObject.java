@@ -4,6 +4,7 @@ package eu.simplejson.elements.object;
 import eu.simplejson.JsonEntity;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.enums.JsonType;
+import eu.simplejson.helper.json.JsonBuilder;
 import eu.simplejson.helper.parsers.JsonParser;
 import eu.simplejson.helper.parsers.json.NormalJsonParser;
 
@@ -35,6 +36,8 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
         this.names = new ArrayList<>();
         this.values = new ArrayList<>();
         this.table = new HashIndexTable();
+
+        this.format = JsonBuilder.lastBuild() == null ? JsonFormat.FORMATTED : JsonBuilder.lastBuild().getFormat();
     }
 
     /**
@@ -73,7 +76,9 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
         try {
             JsonObject jsonObject = new JsonObject();
             if (file.exists()) {
-                jsonObject = new JsonParser(format).parse(new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8))).asJsonObject();
+                jsonObject = new JsonParser(format)
+                        .parse(new BufferedReader(new InputStreamReader(new FileInputStream(file), StandardCharsets.UTF_8)))
+                        .asJsonObject();
             }
 
             this.table = new HashIndexTable();
@@ -86,6 +91,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
     /**
@@ -318,6 +324,11 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return false;
     }
 
     @Override

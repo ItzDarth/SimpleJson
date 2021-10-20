@@ -5,6 +5,7 @@ import eu.simplejson.elements.JsonArray;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.elements.object.JsonEntry;
 import eu.simplejson.helper.JsonHelper;
+import eu.simplejson.helper.json.JsonBuilder;
 import eu.simplejson.helper.parsers.json.NormalJsonWriter;
 
 import java.io.IOException;
@@ -26,6 +27,14 @@ public class SimpleJsonWriter {
             tw.write(separator);
             tw.write("null");
             return;
+        }
+
+        boolean writeArraysSingleLined;
+
+        if (JsonBuilder.lastBuild() == null) {
+            writeArraysSingleLined = false;
+        } else {
+            writeArraysSingleLined = JsonBuilder.lastBuild().isWriteArraysSingleLined();
         }
 
         switch (value.jsonType()) {
@@ -54,6 +63,7 @@ public class SimpleJsonWriter {
 
                     tw.write(escape);
                     tw.write(":");
+
                     saveRecursive(jsonEntry.getValue(), tw, level + 1, " ", false);
                 }
 
@@ -66,6 +76,20 @@ public class SimpleJsonWriter {
             case ARRAY:
                 JsonArray jsonArray = value.asJsonArray();
                 int size = jsonArray.size();
+                boolean allow = true;
+                for (JsonEntity entity : jsonArray) {
+                    if (entity != null) {
+                        if (!entity.isPrimitive()) {
+                            allow = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (allow && writeArraysSingleLined) {
+                    noIndent = true;
+                }
+
                 if (!noIndent) {
                     if (size > 0) {
                         newLine(tw, level);
@@ -73,18 +97,38 @@ public class SimpleJsonWriter {
                         tw.write(separator);
                     }
                 }
-                tw.write('[');
+                if (jsonArray.isEmpty()) {
+                    tw.write("[]");
+                } else {
+                    if (writeArraysSingleLined && allow) {
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append(" ");
+                        stringBuilder.append("[");
 
-                //Saving sub-objects of the array
-                for (int i = 0; i < size; i++) {
-                    newLine(tw, level + 1);
-                    saveRecursive(jsonArray.get(i), tw, level + 1, "", true);
-                }
+                        for (int i = 0; i < size; i++) {
+                            JsonEntity entity = jsonArray.get(i);
+                            stringBuilder.append(entity.toString());
+                            if ((i + 1) != size) {
+                                stringBuilder.append(", ");
+                            }
+                        }
+                        stringBuilder.append("]");
+                        tw.write(stringBuilder.toString());
+                    } else {
+                        tw.write('[');
 
-                if (size > 0) {
-                    newLine(tw, level);
+                        //Saving sub-objects of the array
+                        for (int i = 0; i < size; i++) {
+                            newLine(tw, level + 1);
+                            saveRecursive(jsonArray.get(i), tw, level + 1, "", true);
+                        }
+
+                        if (size > 0) {
+                            newLine(tw, level);
+                        }
+                        tw.write(']');
+                    }
                 }
-                tw.write(']');
                 break;
 
             case BOOLEAN:

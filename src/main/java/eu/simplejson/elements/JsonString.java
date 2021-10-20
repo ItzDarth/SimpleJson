@@ -20,6 +20,11 @@ public class JsonString extends JsonEntity {
     }
 
     @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    @Override
     public boolean isString() {
         return true;
     }

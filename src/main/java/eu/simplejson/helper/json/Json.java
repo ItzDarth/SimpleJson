@@ -1,6 +1,7 @@
 package eu.simplejson.helper.json;
 
 import eu.simplejson.JsonEntity;
+import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.helper.adapter.JsonSerializer;
 import eu.simplejson.helper.exlude.ExcludeStrategy;
 
@@ -74,4 +75,14 @@ public interface Json {
      * checks for subclasses of serializers
      */
     boolean isCheckSerializersForSubClasses();
+
+    /**
+     * Checks if arrays should be written in a single line
+     */
+    boolean isWriteArraysSingleLined();
+
+    /**
+     * The format of the json instance
+     */
+    JsonFormat getFormat();
 }

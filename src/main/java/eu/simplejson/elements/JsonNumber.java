@@ -37,6 +37,11 @@ public class JsonNumber extends JsonEntity {
     }
 
     @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    @Override
     public JsonType jsonType() {
         return JsonType.NUMBER;
     }

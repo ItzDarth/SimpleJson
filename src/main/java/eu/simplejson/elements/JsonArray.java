@@ -27,6 +27,11 @@ public class JsonArray extends JsonEntity implements Iterable<JsonEntity> {
         this.values = unmodifiable ? Collections.unmodifiableList(array.values) : new ArrayList<>(array.values);
     }
 
+    @Override
+    public boolean isPrimitive() {
+        return false;
+    }
+
     /**
      * Adds a {@link JsonEntity} to this array
      *

@@ -32,6 +32,11 @@ public class JsonLiteral extends JsonEntity {
     }
 
     @Override
+    public boolean isPrimitive() {
+        return true;
+    }
+
+    @Override
     public int hashCode() {
         return value.hashCode();
     }
