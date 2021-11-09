@@ -12,10 +12,10 @@ public @interface WrapperClass {
     /**
      * The class of the interface
      */
-    Class<?> interfaceClass();
+    Class<?> interfaceClass() default Class.class;
 
     /**
      * The wrapper class for the interface
      */
-    Class<?> wrapperClass();
+    Class<?> value();
 }

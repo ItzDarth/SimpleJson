@@ -37,7 +37,7 @@ public class MapSerializer extends JsonSerializer<Map> {
                     SerializedField annotation = field.getAnnotation(SerializedField.class);
                     for (WrapperClass wrapperClass : annotation.wrapperClasses()) {
                         if (wrapperClass.interfaceClass().equals(field.getType())) {
-                            typeClass = wrapperClass.wrapperClass();
+                            typeClass = wrapperClass.value();
                         }
                     }
                 }

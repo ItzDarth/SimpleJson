@@ -6,16 +6,27 @@ import eu.simplejson.helper.adapter.JsonSerializer;
 import eu.simplejson.helper.json.Json;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ListSerializer extends JsonSerializer<List> {
-    
+
+
     @Override
     public List deserialize(JsonEntity element, Field field, Json json) {
-        List list = new ArrayList();
+
+        ParameterizedType stringListType = (ParameterizedType) field.getGenericType();
+        Class<?> typeClass = (Class<?>) stringListType.getActualTypeArguments()[0];
+
+        List list = new ArrayList<>();
         for (JsonEntity jsonEntity : element.asJsonArray()) {
-            list.add(jsonEntity.asObject());
+            Object o = jsonEntity.asObject();
+            if (o == null) {
+                list.add(json.fromJson(jsonEntity, typeClass));
+            } else {
+                list.add(o);
+            }
         }
         return list;
     }
