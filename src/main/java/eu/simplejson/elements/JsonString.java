@@ -5,6 +5,8 @@ package eu.simplejson.elements;
 import eu.simplejson.JsonEntity;
 import eu.simplejson.enums.JsonType;
 
+import java.util.UUID;
+
 public class JsonString extends JsonEntity {
 
     /**
@@ -42,6 +44,11 @@ public class JsonString extends JsonEntity {
     @Override
     public String asString() {
         return string;
+    }
+
+    @Override
+    public UUID asUUID() {
+        return UUID.fromString(string);
     }
 
     @Override

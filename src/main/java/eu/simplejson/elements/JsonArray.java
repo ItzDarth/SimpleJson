@@ -7,6 +7,8 @@ import eu.simplejson.helper.JsonHelper;
 import lombok.Getter;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 @Getter
 public class JsonArray extends JsonEntity implements Iterable<JsonEntity> {
@@ -25,6 +27,23 @@ public class JsonArray extends JsonEntity implements Iterable<JsonEntity> {
 
     public JsonArray(JsonArray array, boolean unmodifiable) {
         this.values = unmodifiable ? Collections.unmodifiableList(array.values) : new ArrayList<>(array.values);
+
+    }
+
+    /**
+     * Creates a new {@link JsonArray} in one single line
+     *
+     * @param elements the elements to add to this array
+     * @param handler the handler for the single elements
+     * @param <T> the generic type
+     * @return created json array
+     */
+    public static <T> JsonArray create(List<T> elements, BiConsumer<JsonArray, T> handler) {
+        JsonArray jsonArray = new JsonArray();
+        for (T element : elements) {
+            handler.accept(jsonArray, element);
+        }
+        return jsonArray;
     }
 
     @Override

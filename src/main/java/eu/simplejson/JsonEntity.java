@@ -17,6 +17,7 @@ import lombok.Setter;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.UUID;
 
 public abstract class JsonEntity implements Serializable {
 
@@ -316,6 +317,13 @@ public abstract class JsonEntity implements Serializable {
      */
     public String asString() {
         throw new UnsupportedOperationException("Not a string: " + toString());
+    }
+
+    /**
+     * Gets this {@link JsonEntity} as {@link UUID}
+     */
+    public UUID asUUID() {
+        throw new UnsupportedOperationException("Not a uuid: " + toString());
     }
 
     /**

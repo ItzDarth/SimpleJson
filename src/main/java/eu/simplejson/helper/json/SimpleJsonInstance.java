@@ -290,6 +290,8 @@ class SimpleJsonInstance implements Json {
         //No serializer... trying with empty object
         if (object == null) {
             object = JsonHelper.createEmptyObject(typeClass);
+        } else {
+            return object;
         }
 
         //Object still null returning null
@@ -383,7 +385,7 @@ class SimpleJsonInstance implements Json {
             } else if (jsonLiteral == JsonLiteral.NULL) {
                 object = null;
             }
-        } else if (json instanceof JsonString && typeClass == String.class) {
+        } else if (json instanceof JsonString) {
             object = (T) json.asString();
         } else if (json instanceof JsonArray) {
             List<T> list = new ArrayList<>();

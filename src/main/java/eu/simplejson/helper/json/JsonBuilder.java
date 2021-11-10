@@ -1,6 +1,12 @@
 package eu.simplejson.helper.json;
 
 import eu.simplejson.enums.JsonFormat;
+import eu.simplejson.helper.adapter.JsonSerializer;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class JsonBuilder {
 
@@ -51,12 +57,18 @@ public class JsonBuilder {
      */
     private boolean writeArraysSingleLined;
 
+    /**
+     * Extra serializers
+     */
+    private Map<Class<?>, JsonSerializer<?>> serializers;
+
     private JsonBuilder() {
         this.format = JsonFormat.RAW;
         this.serializeNulls = false;
         this.writeArraysSingleLined = false;
         this.serializeSameFieldInstance = 10;
         this.checkSerializersForSubClasses = true;
+        this.serializers = new HashMap<>();
     }
 
     /**
@@ -128,10 +140,26 @@ public class JsonBuilder {
     }
 
     /**
+     * Adds a {@link JsonSerializer} to the cached ones
+     *
+     * @param serializer the serializer
+     * @return current json
+     */
+    public JsonBuilder addSerializer(Class<?> cls, JsonSerializer<?> serializer) {
+        this.serializers.put(cls, serializer);
+        return this;
+    }
+
+    /**
      * Builds this instance
      */
     public Json build() {
         Json json = new SimpleJsonInstance(format, serializeNulls, serializeSameFieldInstance, checkSerializersForSubClasses, writeArraysSingleLined);
+
+        for (Class aClass : this.serializers.keySet()) {
+            JsonSerializer jsonSerializer = this.serializers.get(aClass);
+            json.registerSerializer(aClass, jsonSerializer);
+        }
         lastBuild = json;
         return  json;
     }
