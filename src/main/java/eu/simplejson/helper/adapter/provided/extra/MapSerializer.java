@@ -9,6 +9,8 @@ import eu.simplejson.helper.json.Json;
 import lombok.SneakyThrows;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +23,8 @@ public class MapSerializer extends JsonSerializer<Map> {
         if (element.isJsonObject()) {
             JsonObject jsonObject = element.asJsonObject();
             Class<?> typeClass = null;
+            Class<?> mapKeyType;
+            Class<?> mapValueType = null;
             if (field == null) {
                 for (String key : jsonObject.keySet()) {
                     JsonEntity entity = jsonObject.get(key);
@@ -28,31 +32,42 @@ public class MapSerializer extends JsonSerializer<Map> {
                     if (entity.isJsonObject()) {
                         JsonObject object = (JsonObject)entity;
                         if (object.has("@type")) {
-                            typeClass = Class.forName(object.get("@type").asString());
+                            mapValueType = Class.forName(object.get("@type").asString());
                         }
                     }
                }
             } else {
+                ParameterizedType mapType = (ParameterizedType) field.getGenericType();
+                mapKeyType = (Class<?>) mapType.getActualTypeArguments()[0];
+                mapValueType = (Class<?>) mapType.getActualTypeArguments()[1];
+
                 if (field.getType().isInterface() && field.getAnnotation(SerializedField.class) != null) {
                     SerializedField annotation = field.getAnnotation(SerializedField.class);
                     for (WrapperClass wrapperClass : annotation.wrapperClasses()) {
                         if (wrapperClass.interfaceClass().equals(field.getType())) {
                             typeClass = wrapperClass.value();
+                        } else if (wrapperClass.interfaceClass().equals(mapKeyType)) {
+                            mapKeyType = wrapperClass.value();
+                        } else if (wrapperClass.interfaceClass().equals(mapValueType)) {
+                            mapValueType = wrapperClass.value();
                         }
                     }
                 }
                 if (typeClass == null) {
                     typeClass = field.getType();
                 }
+                if (mapValueType == null) {
+                    mapValueType = typeClass;
+                }
             }
 
             for (String key : jsonObject.keySet()) {
-                if (typeClass == null) {
+                if (mapValueType == null) {
                     map.put(key, jsonObject.get(key).asObject());
                 } else {
                     Object o = jsonObject.get(key).asObject();
 
-                    map.put(key, o == null ? json.fromJson(jsonObject.get(key), typeClass) : o);
+                    map.put(key, o == null ? json.fromJson(jsonObject.get(key), mapValueType) : o);
                 }
             }
         } else {
@@ -73,8 +88,8 @@ public class MapSerializer extends JsonSerializer<Map> {
 
                 if (entity == null) {
                     entity = json.toJson(value);
-
                 }
+
                 if (field == null) {
                     if (entity.isJsonObject()) {
                         ((JsonObject)entity).addProperty("@type", value.getClass().getName());

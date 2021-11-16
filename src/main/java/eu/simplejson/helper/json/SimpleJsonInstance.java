@@ -104,7 +104,7 @@ class SimpleJsonInstance implements Json {
         this.registerSerializer(JsonLiteral.class, new LiteralSerializer());
 
         //Storage types
-        this.registerSerializer(Iterable.class, new IterableSerializer());
+        //this.registerSerializer(Iterable.class, new IterableSerializer());
         this.registerSerializer(List.class, new ListSerializer());
         this.registerSerializer(Map.class, new MapSerializer());
 
@@ -121,16 +121,30 @@ class SimpleJsonInstance implements Json {
     }
 
     private <T> JsonEntity toJson(T obj, int currentTry, int maxTry) {
+        if (JsonEntity.valueOf(obj) != null) {
+            return JsonEntity.valueOf(obj);
+        }
         try {
             if (obj == null) {
                 return JsonLiteral.NULL;
             }
             JsonEntity jsonEntity;
-            if (this.registeredSerializers.containsKey(obj.getClass())) {
-                JsonSerializer<T> jsonSerializer = (JsonSerializer<T>) this.registeredSerializers.get(obj.getClass());
+            boolean contains = this.registeredSerializers.containsKey(obj.getClass());
+            Class<?> typeClass = obj.getClass();
+            if (checkSerializersForSubClasses) {
+                for (Class<?> aClass : JsonHelper.loadAllSubClasses(obj.getClass())) {
+                    if (this.registeredSerializers.containsKey(aClass)) {
+                        contains = true;
+                        typeClass = aClass;
+                        break;
+                    }
+                }
+            }
+            if (contains) {
+                JsonSerializer<T> jsonSerializer = (JsonSerializer<T>) this.registeredSerializers.get(typeClass);
                 jsonEntity = jsonSerializer.serialize(obj, this, null);
             } else {
-                if (obj instanceof Iterable<?>) {
+                if (obj instanceof Iterable<?> ) {
                     JsonArray jsonArray = new JsonArray();
                     Iterable<?> iterable = (Iterable<?>) obj;
 

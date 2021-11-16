@@ -5,6 +5,8 @@ import eu.simplejson.helper.json.JsonBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -14,11 +16,16 @@ public class Test {
 
         Json json = JsonBuilder.newBuilder().recommendedSettings().build();
 
-        JsonConfig config = json.loadConfig(new File("test.json"));
 
-        config.set("network.players.Lystx.name", "Hans");
+        Map<String, Object> map = new HashMap<>();
 
-        config.save();
+        Map<String, Object> map2 = new HashMap<>();
+        map2.put("age", 23);
+        map2.put("name", "Lystx");
+        map.put("newMap", map2);
+        map.put("version", 1.0);
+
+        System.out.println(json.toJson(map));
     }
 
 
