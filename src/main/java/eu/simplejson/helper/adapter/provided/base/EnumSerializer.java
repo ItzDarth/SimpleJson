@@ -12,10 +12,8 @@ public class EnumSerializer extends JsonSerializer<Enum> {
     @Override
     public Enum deserialize(JsonEntity element, Field field, Json json) {
         try {
-            String s  = element.asString();
-            String s1 = s.split("\\.")[0];
-            Class enumClass = Class.forName(s1);
-            return Enum.valueOf(enumClass, s.split("\\.")[1]);
+            Class enumClass = field.getType();
+            return Enum.valueOf(enumClass, element.asString());
         } catch (Exception e) {
             e.printStackTrace();
             return null;

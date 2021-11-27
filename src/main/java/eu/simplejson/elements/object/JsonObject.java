@@ -65,6 +65,29 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
     }
 
     /**
+     * Creates a new {@link JsonObject} from a given byte-array
+     * It will load the object out of the array by reading it
+     *
+     * @param bytes the data to read
+     */
+    public JsonObject(byte[] bytes) {
+        this();
+
+        try (InputStreamReader stream = new InputStreamReader(new ByteArrayInputStream(bytes))) {
+            JsonEntity element = new NormalJsonParser(stream).parse();
+            if (!element.isJsonObject()) {
+                this.addAll(new JsonObject());
+                return;
+            }
+
+            this.addAll(element.asJsonObject());
+        } catch (final Throwable throwable) {
+            throwable.printStackTrace();
+            this.addAll(new JsonObject());
+        }
+    }
+
+    /**
      * Creates a new {@link JsonObject} from a given {@link File}
      * It will load the object out of the file by reading it
      *
@@ -302,6 +325,10 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      */
     public boolean isEmpty() {
         return names.isEmpty() && values.isEmpty();
+    }
+
+    public byte[] getBytes() {
+        return this.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     @Override

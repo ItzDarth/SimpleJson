@@ -7,6 +7,7 @@ import eu.simplejson.elements.JsonNumber;
 import eu.simplejson.elements.JsonString;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.enums.JsonFormat;
+import eu.simplejson.exception.JsonParseException;
 import eu.simplejson.helper.JsonHelper;
 import eu.simplejson.helper.adapter.JsonSerializer;
 import eu.simplejson.helper.adapter.provided.base.BooleanSerializer;
@@ -25,6 +26,8 @@ import eu.simplejson.helper.exlude.ExcludeStrategy;
 import eu.simplejson.helper.parsers.JsonParser;
 import lombok.Getter;
 import lombok.SneakyThrows;
+import org.reflections.Reflections;
+import org.reflections.scanners.SubTypesScanner;
 
 import java.io.File;
 import java.io.Reader;
@@ -120,13 +123,18 @@ class SimpleJsonInstance implements Json {
         this.excludeStrategies.add(strategy);
     }
 
-    private <T> JsonEntity toJson(T obj, int currentTry, int maxTry) {
-        if (JsonEntity.valueOf(obj) != null) {
-            return JsonEntity.valueOf(obj);
+    private <T> JsonEntity toJson(T base, int currentTry, int maxTry) {
+        if (JsonEntity.valueOf(base) != null) {
+            return JsonEntity.valueOf(base);
         }
+        Object obj = base;
         try {
             if (obj == null) {
                 return JsonLiteral.NULL;
+            }
+            if (obj.getClass().isArray()) {
+                T[] arrayObj = (T[])obj;
+                obj = Arrays.asList(arrayObj);
             }
             JsonEntity jsonEntity;
             boolean contains = this.registeredSerializers.containsKey(obj.getClass());
@@ -142,7 +150,7 @@ class SimpleJsonInstance implements Json {
             }
             if (contains) {
                 JsonSerializer<T> jsonSerializer = (JsonSerializer<T>) this.registeredSerializers.get(typeClass);
-                jsonEntity = jsonSerializer.serialize(obj, this, null);
+                jsonEntity = jsonSerializer.serialize((T) obj, this, null);
             } else {
                 if (obj instanceof Iterable<?> ) {
                     JsonArray jsonArray = new JsonArray();
@@ -291,6 +299,8 @@ class SimpleJsonInstance implements Json {
         });
     }
 
+    Map<Class<?>, Class<?>> classCache = new HashMap<>();
+
     @Override
     @SneakyThrows
     public <T> T fromJson(JsonEntity json, Class<T> typeClass) {
@@ -303,7 +313,41 @@ class SimpleJsonInstance implements Json {
 
         //No serializer... trying with empty object
         if (object == null) {
-            object = JsonHelper.createEmptyObject(typeClass);
+            if (typeClass.isArray()) {
+
+                //must be arrayed
+                List<T> typeList = new ArrayList<>();
+
+                if (!(json instanceof JsonArray)) {
+                    throw new RuntimeException();
+                }
+                List<T> list = new ArrayList<>();
+                for (JsonEntity entity : ((JsonArray) json)) {
+                    Object obj = entity.asObject();
+
+                    if (obj == null) {
+                        String className = typeClass.getSimpleName().split("\\[]")[0];
+                        Class<?> aClass;
+                        if (classCache.containsKey(typeClass)) {
+                            aClass = classCache.get(typeClass);
+                        } else {
+                            aClass = Class.forName(new Reflections("", new SubTypesScanner(false)).getAllTypes().stream()
+                                .filter(o -> o.endsWith("." + className))
+                                .findFirst()
+                                .orElse(null));
+                            classCache.put(typeClass, aClass);
+                        }
+
+                        System.out.println(aClass);
+                        obj = fromJson(entity, aClass);
+                    }
+
+                    list.add((T) obj);
+                }
+                return (T) typeList.toArray(new Object[0]);
+            } else {
+                object = JsonHelper.createEmptyObject(typeClass);
+            }
         } else {
             return object;
         }

@@ -55,6 +55,10 @@ public class NormalJsonWriter {
         } else {
             writeArraysSingleLined = JsonBuilder.lastBuild().isWriteArraysSingleLined();
         }
+        if (value == null) {
+            tw.write("null");
+            return;
+        }
 
         switch (value.jsonType()) {
             case OBJECT:

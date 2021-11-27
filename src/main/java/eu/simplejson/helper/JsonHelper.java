@@ -22,6 +22,9 @@ public class JsonHelper {
      * @param tClass the object class
      */
     public static <T> T createEmptyObject(Class<T> tClass) {
+        if (tClass.isEnum()) {
+            return tClass.getEnumConstants()[0];
+        }
         try {
             return tClass.newInstance();
         } catch (Exception ignored) {
