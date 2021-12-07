@@ -25,6 +25,7 @@ import eu.simplejson.helper.config.SimpleJsonSection;
 import eu.simplejson.helper.exlude.ExcludeStrategy;
 import eu.simplejson.helper.parsers.JsonParser;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.SneakyThrows;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
@@ -36,7 +37,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
-class SimpleJsonInstance implements Json {
+public class SimpleJsonInstance implements Json {
 
     /**
      * All registered serializers
@@ -74,7 +75,8 @@ class SimpleJsonInstance implements Json {
     /**
      * If primitive arrays should be written like this : [1, 2, 3, 4, 5, 6]
      */
-    private final boolean writeArraysSingleLined;
+    @Setter
+    private boolean writeArraysSingleLined;
 
     SimpleJsonInstance(JsonFormat format, boolean serializeNulls, int serializeSameFieldInstance, boolean checkSerializersForSubClasses, boolean writeArraysSingleLined) {
         this.format = format;
@@ -123,10 +125,18 @@ class SimpleJsonInstance implements Json {
         this.excludeStrategies.add(strategy);
     }
 
+
+    public static boolean CHANGED_WRITE_SINGLE_LINE = false;
+    public static boolean OLD_SINGLE_LINE_VALUE = false;
+
     private <T> JsonEntity toJson(T base, int currentTry, int maxTry) {
         if (JsonEntity.valueOf(base) != null) {
             return JsonEntity.valueOf(base);
         }
+
+        OLD_SINGLE_LINE_VALUE = this.writeArraysSingleLined;
+        CHANGED_WRITE_SINGLE_LINE = false;
+
         Object obj = base;
         try {
             if (obj == null) {
@@ -173,6 +183,16 @@ class SimpleJsonInstance implements Json {
                     Class<?>[] excludeClasses = new Class[0];
 
                     if (annotation != null) {
+                        SerializedObject.ConsiderArrayType considerArrayType = annotation.writeArraysSingleLined();
+                        if (considerArrayType != SerializedObject.ConsiderArrayType.IGNORE) {
+
+                            boolean changed = considerArrayType == SerializedObject.ConsiderArrayType.OVERRIDE_TRUE;
+                            //changing setting in instance
+
+                            CHANGED_WRITE_SINGLE_LINE = true;
+                            writeArraysSingleLined = changed;
+                            JsonBuilder.setLastBuild(this);
+                        }
                         excludeClasses = annotation.excludeClasses();
                         maxTry = annotation.serializeSameFieldInstance();
 
@@ -182,8 +202,8 @@ class SimpleJsonInstance implements Json {
                             excludeStrategies.clear();
                             excludeStrategies.add(strategy.newInstance());
                         }
-
                     }
+
 
                     if (obj.getClass().getDeclaredFields().length == 0) {
                         jsonEntity = new JsonString(obj.getClass().getName());
@@ -466,5 +486,9 @@ class SimpleJsonInstance implements Json {
             System.out.println("Json could not deserialize Entity of type " + json.jsonType() + "!");
         }
         return object;
+    }
+
+    public Json getSimpleInstance() {
+        return this;
     }
 }

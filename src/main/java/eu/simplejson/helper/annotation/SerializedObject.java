@@ -31,4 +31,34 @@ public @interface SerializedObject {
      * this provided {@link ExcludeStrategy}
      */
     Class<? extends ExcludeStrategy> strategy() default ExcludeStrategy.class;
+
+    /**
+     * Overrides the option of the {@link eu.simplejson.helper.json.Json} instance
+     * if arrays should be written in one line if possible
+     *
+     * Only works if the field this annotation is on is really an array or list
+     */
+    ConsiderArrayType writeArraysSingleLined() default ConsiderArrayType.IGNORE;
+
+    enum ConsiderArrayType {
+
+        /**
+         * This value will be ignored
+         * The depending JsonSetting will be used
+         */
+        IGNORE,
+
+        /**
+         * It overrides the json setting
+         * and writes arrays single-lined
+         */
+        OVERRIDE_TRUE,
+
+        /**
+         * It overrides the json setting
+         * and doesn't writes arrays single-lined
+         */
+        OVERRIDE_FALSE,
+
+    }
 }

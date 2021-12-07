@@ -3,9 +3,7 @@ package eu.simplejson.helper.json;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.helper.adapter.JsonSerializer;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class JsonBuilder {
@@ -22,6 +20,10 @@ public class JsonBuilder {
      */
     public static Json lastBuild() {
         return lastBuild;
+    }
+
+    public static void setLastBuild(Json json) {
+        lastBuild = json;
     }
 
     /**
@@ -60,7 +62,7 @@ public class JsonBuilder {
     /**
      * Extra serializers
      */
-    private Map<Class<?>, JsonSerializer<?>> serializers;
+    private final Map<Class<?>, JsonSerializer<?>> serializers;
 
     private JsonBuilder() {
         this.format = JsonFormat.RAW;

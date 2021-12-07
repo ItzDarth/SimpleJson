@@ -23,4 +23,5 @@ public @interface SerializedField {
      * All {@link WrapperClass}es for this field to replace
      */
     WrapperClass[] wrapperClasses() default {};
+
 }

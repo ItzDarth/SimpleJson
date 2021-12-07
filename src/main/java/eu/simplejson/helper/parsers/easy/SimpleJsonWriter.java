@@ -5,7 +5,9 @@ import eu.simplejson.elements.JsonArray;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.elements.object.JsonEntry;
 import eu.simplejson.helper.JsonHelper;
+import eu.simplejson.helper.json.Json;
 import eu.simplejson.helper.json.JsonBuilder;
+import eu.simplejson.helper.json.SimpleJsonInstance;
 import eu.simplejson.helper.parsers.json.NormalJsonWriter;
 
 import java.io.IOException;
@@ -35,6 +37,14 @@ public class SimpleJsonWriter {
             writeArraysSingleLined = false;
         } else {
             writeArraysSingleLined = JsonBuilder.lastBuild().isWriteArraysSingleLined();
+        }
+
+        if (SimpleJsonInstance.CHANGED_WRITE_SINGLE_LINE) {
+            SimpleJsonInstance jsonInstance = (SimpleJsonInstance) JsonBuilder.lastBuild();
+            jsonInstance.setWriteArraysSingleLined(SimpleJsonInstance.OLD_SINGLE_LINE_VALUE);
+            SimpleJsonInstance.CHANGED_WRITE_SINGLE_LINE = false;
+
+            JsonBuilder.setLastBuild(jsonInstance);
         }
 
         switch (value.jsonType()) {
