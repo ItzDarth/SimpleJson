@@ -9,27 +9,11 @@ import java.util.Map;
 public class JsonBuilder {
 
     /**
-     * Creates a new {@link JsonBuilder} instance
-     */
-    public static JsonBuilder newBuilder() {
-        return new JsonBuilder();
-    }
-
-    /**
      * Gets the last build instance
      */
     public static Json lastBuild() {
-        return lastBuild;
+        return Json.CURRENT_INSTANCE.get();
     }
-
-    public static void setLastBuild(Json json) {
-        lastBuild = json;
-    }
-
-    /**
-     * The last built json instance
-     */
-    private static Json lastBuild;
 
     /**
      * The format for printing
@@ -46,7 +30,7 @@ public class JsonBuilder {
      * will be serialized if its the same type as the class
      * (to prevent StackOverFlow)
      */
-    private int serializeSameFieldInstance;
+    private int innerClassSerialization;
 
     /**
      * If an object that no serializer was found for
@@ -64,27 +48,13 @@ public class JsonBuilder {
      */
     private final Map<Class<?>, JsonSerializer<?>> serializers;
 
-    private JsonBuilder() {
+    public JsonBuilder() {
         this.format = JsonFormat.RAW;
-        this.serializeNulls = false;
+        this.serializeNulls = true;
         this.writeArraysSingleLined = false;
-        this.serializeSameFieldInstance = 10;
+        this.innerClassSerialization = 2;
         this.checkSerializersForSubClasses = true;
         this.serializers = new HashMap<>();
-    }
-
-    /**
-     * Uses the recommended settings
-     *
-     * @return current json
-     */
-    public JsonBuilder recommendedSettings() {
-        this.format = JsonFormat.FORMATTED;
-        this.serializeNulls = true;
-        this.writeArraysSingleLined = true;
-        this.serializeSameFieldInstance = 10;
-        this.checkSerializersForSubClasses = true;
-        return this;
     }
 
     /**
@@ -95,8 +65,8 @@ public class JsonBuilder {
      * @param times the amount
      * @return current json
      */
-    public JsonBuilder serializeSameFieldInstance(int times) {
-        this.serializeSameFieldInstance = times;
+    public JsonBuilder innerClassSerialization(int times) {
+        this.innerClassSerialization = times;
         return this;
     }
 
@@ -116,7 +86,7 @@ public class JsonBuilder {
      * @param format the format
      * @return current json
      */
-    public JsonBuilder setFormat(JsonFormat format) {
+    public JsonBuilder format(JsonFormat format) {
         this.format = format;
         return this;
     }
@@ -126,8 +96,8 @@ public class JsonBuilder {
      *
      * @return current json
      */
-    public JsonBuilder serializeNulls() {
-        this.serializeNulls = true;
+    public JsonBuilder serializeNulls(boolean state) {
+        this.serializeNulls = state;
         return this;
     }
 
@@ -156,14 +126,8 @@ public class JsonBuilder {
      * Builds this instance
      */
     public Json build() {
-        Json json = new SimpleJsonInstance(format, serializeNulls, serializeSameFieldInstance, checkSerializersForSubClasses, writeArraysSingleLined);
-
-        for (Class aClass : this.serializers.keySet()) {
-            JsonSerializer jsonSerializer = this.serializers.get(aClass);
-            json.registerSerializer(aClass, jsonSerializer);
-        }
-        lastBuild = json;
+        Json json = new SimpleJson(format, serializeNulls, innerClassSerialization, checkSerializersForSubClasses, writeArraysSingleLined, this.serializers);
+        Json.CURRENT_INSTANCE.set(json);
         return  json;
     }
-
 }

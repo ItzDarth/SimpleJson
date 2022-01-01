@@ -10,5 +10,8 @@
         <module name="SimpleJson" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="SimpleJson" target="8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

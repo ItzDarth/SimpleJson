@@ -2,12 +2,13 @@ package eu.simplejson.helper.parsers.easy;
 
 import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.JsonArray;
+import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.elements.object.JsonEntry;
 import eu.simplejson.helper.JsonHelper;
 import eu.simplejson.helper.json.Json;
 import eu.simplejson.helper.json.JsonBuilder;
-import eu.simplejson.helper.json.SimpleJsonInstance;
+import eu.simplejson.helper.json.SimpleJson;
 import eu.simplejson.helper.parsers.json.NormalJsonWriter;
 
 import java.io.IOException;
@@ -39,12 +40,12 @@ public class SimpleJsonWriter {
             writeArraysSingleLined = JsonBuilder.lastBuild().isWriteArraysSingleLined();
         }
 
-        if (SimpleJsonInstance.CHANGED_WRITE_SINGLE_LINE) {
-            SimpleJsonInstance jsonInstance = (SimpleJsonInstance) JsonBuilder.lastBuild();
-            jsonInstance.setWriteArraysSingleLined(SimpleJsonInstance.OLD_SINGLE_LINE_VALUE);
-            SimpleJsonInstance.CHANGED_WRITE_SINGLE_LINE = false;
+        if (SimpleJson.CHANGED_WRITE_SINGLE_LINE) {
+            SimpleJson jsonInstance = (SimpleJson) JsonBuilder.lastBuild();
+            jsonInstance.setWriteArraysSingleLined(SimpleJson.OLD_SINGLE_LINE_VALUE);
+            SimpleJson.CHANGED_WRITE_SINGLE_LINE = false;
 
-            JsonBuilder.setLastBuild(jsonInstance);
+            Json.CURRENT_INSTANCE.set(jsonInstance);
         }
 
         switch (value.jsonType()) {
@@ -60,7 +61,17 @@ public class SimpleJsonWriter {
                 }
                 tw.write('{');
 
+                int nullCount = 0;
                 for (JsonEntry jsonEntry : jsonObject) {
+                    JsonEntity v = jsonEntry.getValue();
+                    if (v == null) {
+                        v = JsonLiteral.NULL;
+                    }
+                    if (v == JsonLiteral.NULL && Json.CURRENT_INSTANCE.get() != null && !Json.CURRENT_INSTANCE.get().isSerializeNulls()) {
+                        nullCount++;
+                        continue;
+                    }
+
                     newLine(tw, level + 1);
 
                     String escape;
@@ -77,7 +88,7 @@ public class SimpleJsonWriter {
                     saveRecursive(jsonEntry.getValue(), tw, level + 1, " ", false);
                 }
 
-                if (jsonObject.size() > 0) {
+                if (jsonObject.size() > 0 && nullCount != jsonObject.size()) {
                     newLine(tw, level);
                 }
                 tw.write('}');

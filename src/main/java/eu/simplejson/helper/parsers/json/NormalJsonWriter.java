@@ -7,6 +7,7 @@ import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.elements.object.JsonEntry;
 import eu.simplejson.enums.JsonType;
+import eu.simplejson.helper.json.Json;
 import eu.simplejson.helper.json.JsonBuilder;
 import lombok.AllArgsConstructor;
 
@@ -70,6 +71,14 @@ public class NormalJsonWriter {
                 tw.write('{');
 
                 for (JsonEntry jsonEntry : obj) {
+                    JsonEntity v = jsonEntry.getValue();
+                    if (v == null) {
+                        v = JsonLiteral.NULL;
+                    }
+                    if (v == JsonLiteral.NULL && Json.CURRENT_INSTANCE.get() != null && !Json.CURRENT_INSTANCE.get().isSerializeNulls()) {
+                        continue;
+                    }
+
                     if (following) {
                         tw.write(",");
                     }
@@ -77,10 +86,6 @@ public class NormalJsonWriter {
                     tw.write('\"');
                     tw.write(escapeString(jsonEntry.getName()));
                     tw.write("\":");
-                    JsonEntity v = jsonEntry.getValue();
-                    if (v == null) {
-                        v = JsonLiteral.NULL;
-                    }
                     JsonType vType = v.jsonType();
                     if (format && vType != JsonType.ARRAY && vType != JsonType.OBJECT) {
                         tw.write(" ");

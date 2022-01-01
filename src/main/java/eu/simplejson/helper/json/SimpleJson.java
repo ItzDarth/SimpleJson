@@ -37,7 +37,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Getter
-public class SimpleJsonInstance implements Json {
+public class SimpleJson implements Json {
 
     /**
      * All registered serializers
@@ -78,14 +78,14 @@ public class SimpleJsonInstance implements Json {
     @Setter
     private boolean writeArraysSingleLined;
 
-    SimpleJsonInstance(JsonFormat format, boolean serializeNulls, int serializeSameFieldInstance, boolean checkSerializersForSubClasses, boolean writeArraysSingleLined) {
+    SimpleJson(JsonFormat format, boolean serializeNulls, int serializeSameFieldInstance, boolean checkSerializersForSubClasses, boolean writeArraysSingleLined, Map<Class<?>, JsonSerializer<?>> registeredSerializers) {
         this.format = format;
         this.serializeNulls = serializeNulls;
         this.serializeSameFieldInstance = serializeSameFieldInstance;
         this.checkSerializersForSubClasses = checkSerializersForSubClasses;
         this.writeArraysSingleLined = writeArraysSingleLined;
 
-        this.registeredSerializers = new ConcurrentHashMap<>();
+        this.registeredSerializers = registeredSerializers;
         this.excludeStrategies = new ArrayList<>();
 
 
@@ -191,7 +191,7 @@ public class SimpleJsonInstance implements Json {
 
                             CHANGED_WRITE_SINGLE_LINE = true;
                             writeArraysSingleLined = changed;
-                            JsonBuilder.setLastBuild(this);
+                            Json.CURRENT_INSTANCE.set(this);
                         }
                         excludeClasses = annotation.excludeClasses();
                         maxTry = annotation.serializeSameFieldInstance();
@@ -252,7 +252,9 @@ public class SimpleJsonInstance implements Json {
                                 jsonObject.addProperty(name, adapterOrNull.serialize(fieldObject, this, declaredField));
                             } else {
                                 if (fieldObject == null) {
-                                    jsonObject.addProperty(name, JsonLiteral.NULL);
+                                    if (serializeNulls) {
+                                        jsonObject.addProperty(name, JsonLiteral.NULL);
+                                    }
                                 } else {
 
                                     JsonEntity entity = JsonEntity.valueOf(fieldObject);
@@ -260,7 +262,9 @@ public class SimpleJsonInstance implements Json {
                                     if (entity == null) {
                                         if (type.equals(obj.getClass())) {
                                             if (currentTry != -1 && (currentTry > this.serializeSameFieldInstance)) {
-                                                jsonObject.addProperty(name, JsonLiteral.NULL);
+                                                if (serializeNulls) {
+                                                    jsonObject.addProperty(name, JsonLiteral.NULL);
+                                                }
                                             } else {
                                                 jsonObject.addProperty(name, this.toJson(fieldObject, (currentTry + 1), maxTry));
                                             }

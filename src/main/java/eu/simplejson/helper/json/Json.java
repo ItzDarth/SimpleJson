@@ -9,8 +9,14 @@ import eu.simplejson.helper.exlude.ExcludeStrategy;
 import java.io.File;
 import java.io.Reader;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public interface Json {
+
+    /**
+     * The static current json instance (if set)
+     */
+    AtomicReference<Json> CURRENT_INSTANCE = new AtomicReference<>();
 
     /**
      * Registers a new {@link JsonSerializer} for a given {@link Class}
@@ -19,7 +25,8 @@ public interface Json {
      * @param serializer the serializer
      * @param <T>        the generic
      */
-    <T> void registerSerializer(Class<T> typeClass, JsonSerializer<T> serializer);
+    <T>
+    void registerSerializer(Class<T> typeClass, JsonSerializer<T> serializer);
 
     /**
      * Registers a new {@link ExcludeStrategy} for this json instance
@@ -82,6 +89,11 @@ public interface Json {
      * Checks if arrays should be written in a single line
      */
     boolean isWriteArraysSingleLined();
+
+    /**
+     * Checks if nulled values should be serialized
+     */
+    boolean isSerializeNulls();
 
     /**
      * The format of the json instance
