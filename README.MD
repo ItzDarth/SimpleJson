@@ -10,7 +10,7 @@
 - Extra FileFormat (SIMPLE) which breaks every rule of json format (easy to use and understand)
 - Add custom (de-)serializers for your objects to deserialize
 
-##Negative points of SimpleJson
+## Negative points of SimpleJson
 - You can't use any JsonEntity without having created a Json Instance at least once
 <br> => This only requires to build one instance at the start of your programm. Nothing else to do for you.
 <br> => The rest manages SimpleJson itself. It's just sad that you can't use any Element without a valid existing Instance
