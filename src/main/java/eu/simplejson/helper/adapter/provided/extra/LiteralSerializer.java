@@ -12,7 +12,7 @@ public class LiteralSerializer extends JsonSerializer<JsonLiteral> {
 
 
     @Override
-    public JsonLiteral deserialize(JsonEntity element, Field field, Json json) {
+    public JsonLiteral deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
 
         if (element.asString().equals("null") || element.equals(JsonLiteral.NULL)) {
             return (JsonLiteral) JsonLiteral.NULL;

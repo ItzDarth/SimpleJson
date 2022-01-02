@@ -22,7 +22,7 @@
 JsonObject jsonObject = new JsonObject();
 jsonObject.addProperty("name", "Hans"); //Adds a String property
 jsonObject.addProperty("age", "56"); //Adds an int property
-jsonObject.addProperty(adult, true); //Adds a boolean property
+jsonObject.addProperty("adult", true); //Adds a boolean property
 jsonObject.addProperty("key", jsonEntity); //adds a json entity
 ```
 
@@ -43,19 +43,28 @@ jsonArray.size(); //The size of the array
 ## Example usage of Json
 
 ```java
-Json json = JsonBuilder
-        .newBuilder()
-        .serializeNulls() //Allows to serialize nulled fields
-        .serializeSameFieldInstance(2) //The amount of serializing if the class has its same class as field
+Json json = new JsonBuilder()
+        .serializeNulls(true) //Allows to serialize nulled fields
+        .innerClassSerialization(2) //The amount of serializing if the class has its same class as field
         .checkSerializersForSubClasses() //Checks for serializers in subclasses
-        .setFormat(JsonFormat.FORMATTED) //Sets the format of (de-)serialized entities
+        .writeArraysSingleLined() //writes primitive values in one line
+        .format(JsonFormat.FORMATTED) //Sets the format of (de-)serialized entities
         .build(); //Builds this json
 
 JsonEntity entity = json.toJson(UUID.randomUUID()); //Serializes the given 
                                                     // object into a JsonEntity
-
 UUID uuid = json.fromJson(entity, UUID.class); //Deserializes the entity
-                                                     //To the object you want
+                                                //To the object you want
+
+//argument example
+
+JsonEntity entity = json.toJson(Arrays.asList("Hello", "World", "Whats", "up?"));
+
+List<?> list = json.fromJson(entity, List.class, String.class);
+                      //the json    //object-type //the list type
+
+//-> This helps to construct lists and serialize the values inside a list the right way
+
 ```
 
 ## Example (de-)serializer
@@ -64,7 +73,7 @@ UUID uuid = json.fromJson(entity, UUID.class); //Deserializes the entity
 public class UUIDSerializer extends JsonSerializer<UUID> {
 
     @Override
-    public UUID deserialize(JsonEntity element, Field field, Json json) {
+    public UUID deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return UUID.fromString(element.asString());
     }
 
@@ -79,21 +88,22 @@ public class UUIDSerializer extends JsonSerializer<UUID> {
 
 ```java
 
-Json json = JsonBuilder.newBuilder().build();
-
-json.registerSerializer(UUID.class, new UUIDSerializer());
+Json json = new JsonBuilder()
+        .addSerializer(UUID.class, new UUIDSerializer())
+        .build();
 
 ```
 
 ## Reading and saving JsonObjects
 
 ```java
-JsonObject jsonObject = new JsonObject(new File("config.json"));
+File file = new File("config.json");
+JsonObject jsonObject = new JsonObject(file);
 
 jsonObject.addProperty("enabled", true);
 jsonObject.addProperty("lastChanged", new Date().getTime());
 
-jsonObject.save(new File("config.json"));
+jsonObject.save(file);
 
 ```
 

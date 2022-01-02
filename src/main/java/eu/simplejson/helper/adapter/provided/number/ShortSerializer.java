@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 public class ShortSerializer extends JsonSerializer<Short> {
 
     @Override
-    public Short deserialize(JsonEntity element, Field field, Json json) {
+    public Short deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return element.asShort();
     }
 

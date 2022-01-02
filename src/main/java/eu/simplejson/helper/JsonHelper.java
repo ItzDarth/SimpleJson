@@ -216,9 +216,9 @@ public class JsonHelper {
      * @param <T>       the generic
      * @return object or null
      */
-    public static <T> T getSerializedOrNull(Json instance, JsonEntity json, Class<T> typeClass, Field field) {
+    public static <T> T getSerializedOrNull(Json instance, JsonEntity json, Class<T> typeClass, Field field, Class<?>... arguments) {
         JsonSerializer<T> adapterOrNull = getSerializerOrNull(instance, typeClass);
-        return adapterOrNull == null ? null : adapterOrNull.deserialize(json, field, instance);
+        return adapterOrNull == null ? null : adapterOrNull.deserialize(json, field, instance, arguments);
     }
 
 

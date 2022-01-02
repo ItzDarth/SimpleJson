@@ -11,7 +11,7 @@ public class BooleanSerializer extends JsonSerializer<Boolean> {
 
 
     @Override
-    public Boolean deserialize(JsonEntity element, Field field, Json json) {
+    public Boolean deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return element.asBoolean();
     }
 

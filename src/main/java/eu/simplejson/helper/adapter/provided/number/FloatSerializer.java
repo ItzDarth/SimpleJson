@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 public class FloatSerializer extends JsonSerializer<Float> {
 
     @Override
-    public Float deserialize(JsonEntity element, Field field, Json json) {
+    public Float deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return element.asFloat();
     }
 

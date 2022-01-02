@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 public class LongSerializer extends JsonSerializer<Long> {
 
     @Override
-    public Long deserialize(JsonEntity element, Field field, Json json) {
+    public Long deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return element.asLong();
     }
 

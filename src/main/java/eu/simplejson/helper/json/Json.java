@@ -51,23 +51,25 @@ public interface Json {
      * @param <T>       the generic
      * @return created object
      */
-    <T> T fromJson(JsonEntity json, Class<T> typeClass);
+    <T> T fromJson(JsonEntity json, Class<T> typeClass, Class<?>... arguments);
 
     /**
      * Creates a new object of a {@link String} for a provided class
      *
      * @param json      the string
      * @param typeClass the class of the object
+     * @param arguments the arguments to provide for example for {@link java.util.List} or {@link Map}
      * @param <T>       the generic
      * @return created object
      */
-    <T> T fromJson(String json, Class<T> typeClass);
+    <T> T fromJson(String json, Class<T> typeClass, Class<?>... arguments);
 
     /**
      * Creates a new object of a {@link Reader} for a provided class
      *
      * @param reader    the reader
      * @param typeClass the class of the object
+     * @param arguments the arguments to provide for example for {@link java.util.List} or {@link Map}
      * @param <T>       the generic
      * @return created object
      */

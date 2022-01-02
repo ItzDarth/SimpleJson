@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 public class ClassSerializer extends JsonSerializer<Class> {
 
     @Override
-    public Class deserialize(JsonEntity element, Field field, Json json) {
+    public Class deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         try {
             return Class.forName(element.asString());
         } catch (ClassNotFoundException e) {

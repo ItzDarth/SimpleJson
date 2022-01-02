@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 public class NumberSerializer extends JsonSerializer<Number> {
 
     @Override
-    public Number deserialize(JsonEntity element, Field field, Json json) {
+    public Number deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         if (element.isDouble()) {
             return element.asDouble();
         } else if (element.isInt()) {

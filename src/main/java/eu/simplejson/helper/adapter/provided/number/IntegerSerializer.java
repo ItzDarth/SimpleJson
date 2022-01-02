@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 public class IntegerSerializer extends JsonSerializer<Integer> {
 
     @Override
-    public Integer deserialize(JsonEntity element, Field field, Json json) {
+    public Integer deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
 
         return element.asInt();
     }

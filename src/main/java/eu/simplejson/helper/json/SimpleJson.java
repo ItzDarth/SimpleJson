@@ -296,8 +296,8 @@ public class SimpleJson implements Json {
     }
 
     @Override
-    public <T> T fromJson(String json, Class<T> typeClass) {
-        return fromJson(new JsonParser(format).parse(json), typeClass);
+    public <T> T fromJson(String json, Class<T> typeClass, Class<?>... argument) {
+        return fromJson(new JsonParser(format).parse(json), typeClass, argument);
     }
 
     @Override
@@ -327,13 +327,13 @@ public class SimpleJson implements Json {
 
     @Override
     @SneakyThrows
-    public <T> T fromJson(JsonEntity json, Class<T> typeClass) {
+    public <T> T fromJson(JsonEntity json, Class<T> typeClass, Class<?>... arguments) {
         if (typeClass.isAnnotationPresent(WrapperClass.class)) {
             WrapperClass annotation = typeClass.getAnnotation(WrapperClass.class);
             typeClass = (Class<T>) annotation.value();
         }
         //Trying to get from serializer
-        T object = JsonHelper.getSerializedOrNull(this, json, typeClass, null);
+        T object = JsonHelper.getSerializedOrNull(this, json, typeClass, null, arguments);
 
         //No serializer... trying with empty object
         if (object == null) {
@@ -492,7 +492,4 @@ public class SimpleJson implements Json {
         return object;
     }
 
-    public Json getSimpleInstance() {
-        return this;
-    }
 }

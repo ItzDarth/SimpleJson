@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 public class IterableSerializer extends JsonSerializer<Iterable> {
     
     @Override
-    public Iterable deserialize(JsonEntity element, Field field, Json json) {
+    public Iterable deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return element.asJsonArray();
     }
 

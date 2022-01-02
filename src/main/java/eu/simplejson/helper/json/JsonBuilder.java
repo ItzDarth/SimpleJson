@@ -117,7 +117,7 @@ public class JsonBuilder {
      * @param serializer the serializer
      * @return current json
      */
-    public JsonBuilder addSerializer(Class<?> cls, JsonSerializer<?> serializer) {
+    public <T> JsonBuilder addSerializer(Class<T> cls, JsonSerializer<T> serializer) {
         this.serializers.put(cls, serializer);
         return this;
     }

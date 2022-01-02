@@ -4,6 +4,7 @@ package eu.simplejson.elements.object;
 import eu.simplejson.JsonEntity;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.enums.JsonType;
+import eu.simplejson.helper.json.Json;
 import eu.simplejson.helper.json.JsonBuilder;
 import eu.simplejson.helper.parsers.JsonParser;
 import eu.simplejson.helper.parsers.json.NormalJsonParser;
@@ -394,6 +395,59 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
         }
     }
 
+    public static class Builder {
 
+        /**
+         * The json instance
+         */
+        private final Json json;
+
+        /**
+         * The container
+         */
+        private final JsonObject container;
+
+        /**
+         * Constructs a new Builder with a pre defined {@link Json} instance
+         * to be able to serialize every input object
+         *
+         * @param json the instance for serialization
+         */
+        public Builder(Json json) {
+            this.json = json;
+
+            this.container = new JsonObject();
+        }
+
+        /**
+         * Deprecated because it requires that a {@link Json}
+         * instance has been built before to use this constructor
+         * It's safer to just provide your instance in the constructor above
+         */
+        @Deprecated
+        public Builder() {
+            this(Json.CURRENT_INSTANCE.get());
+        }
+
+        /**
+         * Appends a value to the container {@link JsonObject} of this builder
+         *
+         * @param key the key where to store the value under
+         * @param value the value to store
+         * @return current builder instance
+         */
+        public Builder append(String key, Object value) {
+            this.container.addProperty(key, this.json.toJson(value));
+            return this;
+        }
+
+        /**
+         * "Builds" the object meaning it just
+         * returns the object that was cached
+         */
+        public JsonObject build() {
+            return this.container;
+        }
+    }
 
 }

@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 public class ByteSerializer extends JsonSerializer<Byte> {
 
     @Override
-    public Byte deserialize(JsonEntity element, Field field, Json json) {
+    public Byte deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return element.asByte();
     }
 

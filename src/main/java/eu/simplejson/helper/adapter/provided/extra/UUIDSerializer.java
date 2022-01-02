@@ -11,7 +11,7 @@ import java.util.UUID;
 public class UUIDSerializer extends JsonSerializer<UUID> {
 
     @Override
-    public UUID deserialize(JsonEntity element, Field field, Json json) {
+    public UUID deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return UUID.fromString(element.asString());
     }
 

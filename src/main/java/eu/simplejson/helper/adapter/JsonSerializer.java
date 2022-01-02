@@ -14,7 +14,7 @@ public abstract class JsonSerializer<T> {
      * @param element the element
      * @return serialized object
      */
-    public abstract T deserialize(JsonEntity element, Field field, Json json);
+    public abstract T deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments);
 
 
     /**

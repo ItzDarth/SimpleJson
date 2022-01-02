@@ -17,7 +17,7 @@ import java.util.Map;
 public class MapSerializer extends JsonSerializer<Map> {
     
     @Override @SneakyThrows
-    public Map deserialize(JsonEntity element, Field field, Json json) {
+    public Map deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         Map map = new HashMap();
 
         if (element.isJsonObject()) {
@@ -25,39 +25,46 @@ public class MapSerializer extends JsonSerializer<Map> {
             Class<?> typeClass = null;
             Class<?> mapKeyType;
             Class<?> mapValueType = null;
-            if (field == null) {
-                for (String key : jsonObject.keySet()) {
-                    JsonEntity entity = jsonObject.get(key);
 
-                    if (entity.isJsonObject()) {
-                        JsonObject object = (JsonObject)entity;
-                        if (object.has("@type")) {
-                            mapValueType = Class.forName(object.get("@type").asString());
-                        }
-                    }
-               }
+            if (arguments.length == 2) {
+                mapKeyType = arguments[0];
+                mapValueType = arguments[1];
             } else {
-                ParameterizedType mapType = (ParameterizedType) field.getGenericType();
-                mapKeyType = (Class<?>) mapType.getActualTypeArguments()[0];
-                mapValueType = (Class<?>) mapType.getActualTypeArguments()[1];
 
-                if (field.getType().isInterface() && field.getAnnotation(SerializedField.class) != null) {
-                    SerializedField annotation = field.getAnnotation(SerializedField.class);
-                    for (WrapperClass wrapperClass : annotation.wrapperClasses()) {
-                        if (wrapperClass.interfaceClass().equals(field.getType())) {
-                            typeClass = wrapperClass.value();
-                        } else if (wrapperClass.interfaceClass().equals(mapKeyType)) {
-                            mapKeyType = wrapperClass.value();
-                        } else if (wrapperClass.interfaceClass().equals(mapValueType)) {
-                            mapValueType = wrapperClass.value();
+                if (field == null) {
+                    for (String key : jsonObject.keySet()) {
+                        JsonEntity entity = jsonObject.get(key);
+
+                        if (entity.isJsonObject()) {
+                            JsonObject object = (JsonObject) entity;
+                            if (object.has("@type")) {
+                                mapValueType = Class.forName(object.get("@type").asString());
+                            }
                         }
                     }
-                }
-                if (typeClass == null) {
-                    typeClass = field.getType();
-                }
-                if (mapValueType == null) {
-                    mapValueType = typeClass;
+                } else {
+                    ParameterizedType mapType = (ParameterizedType) field.getGenericType();
+                    mapKeyType = (Class<?>) mapType.getActualTypeArguments()[0];
+                    mapValueType = (Class<?>) mapType.getActualTypeArguments()[1];
+
+                    if (field.getType().isInterface() && field.getAnnotation(SerializedField.class) != null) {
+                        SerializedField annotation = field.getAnnotation(SerializedField.class);
+                        for (WrapperClass wrapperClass : annotation.wrapperClasses()) {
+                            if (wrapperClass.interfaceClass().equals(field.getType())) {
+                                typeClass = wrapperClass.value();
+                            } else if (wrapperClass.interfaceClass().equals(mapKeyType)) {
+                                mapKeyType = wrapperClass.value();
+                            } else if (wrapperClass.interfaceClass().equals(mapValueType)) {
+                                mapValueType = wrapperClass.value();
+                            }
+                        }
+                    }
+                    if (typeClass == null) {
+                        typeClass = field.getType();
+                    }
+                    if (mapValueType == null) {
+                        mapValueType = typeClass;
+                    }
                 }
             }
 

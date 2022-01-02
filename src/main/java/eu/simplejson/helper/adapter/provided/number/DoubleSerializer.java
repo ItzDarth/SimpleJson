@@ -9,7 +9,7 @@ import java.lang.reflect.Field;
 public class DoubleSerializer extends JsonSerializer<Double> {
 
     @Override
-    public Double deserialize(JsonEntity element, Field field, Json json) {
+    public Double deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         return element.asDouble();
     }
 

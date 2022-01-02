@@ -11,7 +11,7 @@ import java.lang.reflect.Field;
 public class StringSerializer extends JsonSerializer<String> {
 
     @Override
-    public String deserialize(JsonEntity element, Field field, Json json) {
+    public String deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         if (element.isNull()) {
             return null;
         }

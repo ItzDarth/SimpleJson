@@ -10,7 +10,7 @@ import java.lang.reflect.Field;
 public class EnumSerializer extends JsonSerializer<Enum> {
 
     @Override
-    public Enum deserialize(JsonEntity element, Field field, Json json) {
+    public Enum deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
         try {
             Class enumClass = field.getType();
             return Enum.valueOf(enumClass, element.asString());

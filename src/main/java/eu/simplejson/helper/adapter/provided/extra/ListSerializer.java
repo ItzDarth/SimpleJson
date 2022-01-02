@@ -2,6 +2,8 @@ package eu.simplejson.helper.adapter.provided.extra;
 
 import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.JsonArray;
+import eu.simplejson.exception.JsonDeserializeException;
+import eu.simplejson.exception.JsonParseException;
 import eu.simplejson.helper.adapter.JsonSerializer;
 import eu.simplejson.helper.json.Json;
 
@@ -14,15 +16,28 @@ public class ListSerializer extends JsonSerializer<List> {
 
 
     @Override
-    public List deserialize(JsonEntity element, Field field, Json json) {
+    public List deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments) {
 
-        ParameterizedType stringListType = (ParameterizedType) field.getGenericType();
-        Class<?> typeClass = (Class<?>) stringListType.getActualTypeArguments()[0];
+        Class<?> typeClass;
+
+        if (arguments.length != 0) {
+            typeClass = arguments[0];
+        } else {
+            if (field != null) {
+                ParameterizedType stringListType = (ParameterizedType) field.getGenericType();
+                typeClass = (Class<?>) stringListType.getActualTypeArguments()[0];
+            } else {
+                typeClass = null;
+            }
+        }
 
         List list = new ArrayList<>();
         for (JsonEntity jsonEntity : element.asJsonArray()) {
             Object o = jsonEntity.asObject();
             if (o == null) {
+                if (typeClass == null) {
+                    throw new JsonDeserializeException("Tried to deserialize List but couldn't find ClassType of list! Maybe try to parse arguments to the Json#fromJson Method!");
+                }
                 list.add(json.fromJson(jsonEntity, typeClass));
             } else {
                 list.add(o);
