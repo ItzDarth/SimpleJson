@@ -36,7 +36,7 @@ Json yourJsonInstance = new JsonBuilder()
 //To see what to do with the instance read on!
 ```
 
-#Json-Element-Basics:
+## Json-Element-Basics:
 
 ## 1) JsonEntity
 
