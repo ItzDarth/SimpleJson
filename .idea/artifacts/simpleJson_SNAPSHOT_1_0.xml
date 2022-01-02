@@ -2,7 +2,11 @@
   <artifact type="jar" name="simpleJson-SNAPSHOT-1.0">
     <output-path>$PROJECT_DIR$/../../dependencies</output-path>
     <root id="archive" name="simpleJson-SNAPSHOT-1.0.jar">
-      <element id="module-output" name="SimpleJson" />
+      <element id="module-output" name="json-config" />
+      <element id="module-output" name="json-elements" />
+      <element id="module-output" name="json-parser" />
+      <element id="module-output" name="json-serializer" />
+      <element id="library" level="project" name="Maven: org.reflections:reflections:0.9.11" />
     </root>
   </artifact>
 </component>

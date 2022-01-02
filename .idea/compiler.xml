@@ -7,10 +7,20 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="SimpleJson" />
+        <module name="json-serializer" />
+        <module name="json-elements" />
+        <module name="json-config" />
+        <module name="json-parser" />
+        <module name="json-examples" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="json-all" target="8" />
+      <module name="json-config" target="8" />
+      <module name="json-elements" target="8" />
+      <module name="json-examples" target="8" />
+      <module name="json-parser" target="8" />
+      <module name="json-serializer" target="8" />
       <module name="SimpleJson" target="8" />
     </bytecodeTargetLevel>
   </component>

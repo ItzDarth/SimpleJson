@@ -6,7 +6,14 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>eu.simplejson</groupId>
     <artifactId>SimpleJson</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>json-elements</module>
+        <module>json-config</module>
+        <module>json-serializer</module>
+        <module>json-examples</module>
+    </modules>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

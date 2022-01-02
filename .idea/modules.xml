@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/SimpleJson.iml" filepath="$PROJECT_DIR$/SimpleJson.iml" />
+      <module fileurl="file://$PROJECT_DIR$/json-config/json-config.iml" filepath="$PROJECT_DIR$/json-config/json-config.iml" />
+      <module fileurl="file://$PROJECT_DIR$/json-elements/json-elements.iml" filepath="$PROJECT_DIR$/json-elements/json-elements.iml" />
+      <module fileurl="file://$PROJECT_DIR$/json-examples/json-examples.iml" filepath="$PROJECT_DIR$/json-examples/json-examples.iml" />
+      <module fileurl="file://$PROJECT_DIR$/json-all/json-parser.iml" filepath="$PROJECT_DIR$/json-all/json-parser.iml" />
+      <module fileurl="file://$PROJECT_DIR$/json-serializer/json-serializer.iml" filepath="$PROJECT_DIR$/json-serializer/json-serializer.iml" />
+    </modules>
+  </component>
+</project>
