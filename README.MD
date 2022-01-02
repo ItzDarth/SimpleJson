@@ -157,3 +157,57 @@ public class Config {
     }
 }
 ```
+
+## Using the built-in Config API
+
+SimpleJson provides its house own Config-API where you can simply
+store and load values from a file into a config and save it all again
+JsonConfigs consist of JsonSections which represent a JsonObject within
+more JsonObjects
+Unlike the JsonObject it provides way more possibilities like searching for a
+JsonObject through all sub-objects or not having to provide a Json-Instance
+because JsonConfigs are created through a Json-Instance, so there is no way 
+that the Json-Instance is null at any time.
+
+Example:
+```java
+Json json = new JsonBuilder().format(JsonFormat.FORMATTED).build();
+//this can be any json instance you want
+
+JsonConfig config = json.loadConfig(new File("config.json")); //loads the config
+        
+//filling in all values you want to
+config.set("name", "Hans");
+config.set("age", 23);
+config.set("job", "no_job");
+
+//saving the config to the provide file
+config.save();
+```
+
+Retrieving a value from other objects:
+
+```java
+
+
+Json json = new JsonBuilder().format(JsonFormat.FORMATTED).build();
+JsonConfig config = json.loadConfig(new File("config.json")); //loads the config
+
+String key = (String) config.get("sec1.sec2.key");
+System.out.println("Returned: " + key);
+```
+
+The example above would lead to the following:
+
+```json
+{
+    "comment": "The key for this is simply comment",
+    "sec1": {
+        "comment": "The key for this is sec1.comment",
+        "sec2": {
+            "comment": "The key for this is sec1.sec2.key",
+            "key": "value"
+        }
+    }
+}
+```

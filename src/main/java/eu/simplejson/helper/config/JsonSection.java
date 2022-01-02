@@ -51,9 +51,6 @@ import java.util.stream.Stream;
  * before changes take effect. It is up to the
  * implementation on whether to commit changes
  * eagerly.</p>
- *
- * @author VeraSoftware
- * @since 0.3-alpha-DP
  */
 
 public interface JsonSection {

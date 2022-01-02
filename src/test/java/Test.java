@@ -1,12 +1,14 @@
 import eu.simplejson.JsonEntity;
 import eu.simplejson.elements.object.JsonObject;
 import eu.simplejson.enums.JsonFormat;
+import eu.simplejson.helper.config.JsonConfig;
 import eu.simplejson.helper.json.Json;
 import eu.simplejson.helper.json.JsonBuilder;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +26,6 @@ public class Test {
                 .writeArraysSingleLined(true)
                 .checkSerializersForSubClasses()
                 .build();
-
 
         Family family = new Family(
                 new Person(

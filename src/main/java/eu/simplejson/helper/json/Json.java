@@ -73,7 +73,7 @@ public interface Json {
      * @param <T>       the generic
      * @return created object
      */
-    <T> T fromJson(Reader reader, Class<T> typeClass);
+    <T> T fromJson(Reader reader, Class<T> typeClass, Class<?>... arguments);
 
     /**
      * Gets all registered {@link JsonSerializer} for their

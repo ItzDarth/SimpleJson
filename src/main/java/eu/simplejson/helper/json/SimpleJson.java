@@ -301,8 +301,8 @@ public class SimpleJson implements Json {
     }
 
     @Override
-    public <T> T fromJson(Reader reader, Class<T> typeClass) {
-        return fromJson(new JsonParser(format).parse(reader), typeClass);
+    public <T> T fromJson(Reader reader, Class<T> typeClass, Class<?>... arguments) {
+        return fromJson(new JsonParser(format).parse(reader), typeClass, arguments);
     }
 
     /**
