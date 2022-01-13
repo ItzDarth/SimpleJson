@@ -67,7 +67,7 @@ public class NormalJsonWriter {
 
                 JsonObject obj = value.asJsonObject();
                 if (obj.size() > 0) {
-                    this.newLine(tw, level);
+                    //this.newLine(tw, level);
                 }
                 tw.write('{');
 
@@ -102,9 +102,8 @@ public class NormalJsonWriter {
                 tw.write('}');
                 break;
             case ARRAY:
-                JsonArray arr = value.asJsonArray();
-                int size = arr.size();
                 JsonArray jsonArray = value.asJsonArray();
+                int size = jsonArray.size();
                 boolean allow = true;
                 for (JsonEntity entity : jsonArray) {
                     if (entity != null) {
@@ -142,7 +141,7 @@ public class NormalJsonWriter {
                             if (following) {
                                 tw.write(",");
                             }
-                            JsonEntity v = arr.get(i);
+                            JsonEntity v = jsonArray.get(i);
                             JsonType vType = v.jsonType();
                             if (vType != JsonType.ARRAY && vType != JsonType.OBJECT) {
                                 this.newLine(tw, level + 1);
