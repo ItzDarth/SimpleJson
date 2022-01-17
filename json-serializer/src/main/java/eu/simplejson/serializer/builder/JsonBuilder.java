@@ -124,6 +124,15 @@ public class JsonBuilder {
     /**
      * Builds this instance
      */
+    public Json build(JsonSerializer<?>... serializers) {
+        for (JsonSerializer serializer : serializers) {
+            this.addSerializer(serializer.getTypeClass(), serializer);
+        }
+        return this.build();
+    }
+    /**
+     * Builds this instance
+     */
     public Json build() {
         Json json = new SimpleJson(format, serializeNulls, innerClassSerialization, checkSerializersForSubClasses, writeArraysSingleLined, this.serializers);
         SimpleProvider.getInstance().setSerializerModule(json);

@@ -5,6 +5,7 @@ import eu.simplejson.elements.JsonEntity;
 import eu.simplejson.serializer.Json;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 
 public abstract class JsonSerializer<T> {
 
@@ -17,7 +18,6 @@ public abstract class JsonSerializer<T> {
      */
     public abstract T deserialize(JsonEntity element, Field field, Json json, Class<?>... arguments);
 
-
     /**
      * Serializes an object into a {@link JsonEntity}
      *
@@ -27,4 +27,12 @@ public abstract class JsonSerializer<T> {
      * @return serialized element
      */
     public abstract JsonEntity serialize(T obj, Json json, Field field);
+
+    /**
+     * The generic-type this serializer does (de-)serialize
+     */
+    @SuppressWarnings("unchecked")
+    public Class<T> getTypeClass() {
+        return (Class<T>) ((ParameterizedType) getClass().getGenericSuperclass()).getActualTypeArguments()[0];
+    }
 }
