@@ -34,6 +34,8 @@ import java.io.Reader;
 import java.lang.reflect.Field;
 import java.util.*;
 
+import static eu.simplejson.enums.JsonFormat.UNKNOWN;
+
 @Getter
 public class SimpleJson implements Json {
 
@@ -50,7 +52,7 @@ public class SimpleJson implements Json {
     /**
      * The format for printing
      */
-    private final JsonFormat format;
+    private JsonFormat format;
 
     /**
      * If nulls should be serialized
@@ -126,6 +128,8 @@ public class SimpleJson implements Json {
 
     public static boolean CHANGED_WRITE_SINGLE_LINE = false;
     public static boolean OLD_SINGLE_LINE_VALUE = false;
+    public static boolean CHANGED_JSON_FORMAT = false;
+    public static JsonFormat OLD_JSON_FORMAT = UNKNOWN;
 
     private <T> JsonEntity toJson(T base, int currentTry, int maxTry) {
         if (JsonEntity.valueOf(base) != null) {
@@ -134,6 +138,12 @@ public class SimpleJson implements Json {
 
         OLD_SINGLE_LINE_VALUE = this.writeArraysSingleLined;
         CHANGED_WRITE_SINGLE_LINE = false;
+
+        if (base != null && base.getClass().getAnnotation(SerializedObject.class) != null && base.getClass().getAnnotation(SerializedObject.class).customFormat() != UNKNOWN) {
+            OLD_JSON_FORMAT = format;
+            CHANGED_JSON_FORMAT = true;
+            this.format = base.getClass().getAnnotation(SerializedObject.class).customFormat();
+        }
 
         Object obj = base;
         try {
@@ -282,8 +292,11 @@ public class SimpleJson implements Json {
                 }
             }
             jsonEntity.setFormat(this.format);
+
+            if (CHANGED_JSON_FORMAT) this.format = OLD_JSON_FORMAT;
             return jsonEntity;
         } catch (Exception e) {
+            if (CHANGED_JSON_FORMAT) this.format = OLD_JSON_FORMAT;
             return null;
         }
     }

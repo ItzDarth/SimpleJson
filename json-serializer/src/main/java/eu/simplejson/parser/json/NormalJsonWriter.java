@@ -67,7 +67,7 @@ public class NormalJsonWriter {
 
                 JsonObject obj = value.asJsonObject();
                 if (obj.size() > 0) {
-                    //this.newLine(tw, level);
+                    this.newLine(tw, level);
                 }
                 tw.write('{');
 

@@ -1,6 +1,7 @@
 package eu.simplejson.serializer.modifier.annotation;
 
 
+import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.serializer.modifier.strategy.ExcludeStrategy;
 
 import java.lang.annotation.ElementType;
@@ -11,6 +12,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.LOCAL_VARIABLE})
 public @interface SerializedObject {
+
+    /**
+     * The override custom {@link JsonFormat} to use when
+     * serializing an object that is annotated with this annotation
+     */
+    JsonFormat customFormat() default JsonFormat.UNKNOWN;
 
     /**
      * The amount of times a field of an object

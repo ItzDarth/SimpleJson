@@ -4,6 +4,11 @@ package eu.simplejson.enums;
 public enum JsonFormat {
 
     /**
+     * Should never be used
+     */
+    UNKNOWN,
+
+    /**
      * This is the raw json format (e.g. {"key": "value"} )
      */
     RAW,
