@@ -60,6 +60,11 @@ public class SimpleJson implements Json {
     private final boolean serializeNulls;
 
     /**
+     * If null should be declared as null or json literal
+     */
+    private final boolean provideNulledObjectsAsRealNull;
+
+    /**
      * The amount of times a field of an object
      * will be serialized if its the same type as the class
      * (to prevent StackOverFlow)
@@ -78,7 +83,7 @@ public class SimpleJson implements Json {
     @Setter
     private boolean writeArraysSingleLined;
 
-    SimpleJson(JsonFormat format, boolean serializeNulls, int serializeSameFieldInstance, boolean checkSerializersForSubClasses, boolean writeArraysSingleLined, Map<Class<?>, JsonSerializer<?>> registeredSerializers) {
+    SimpleJson(JsonFormat format, boolean serializeNulls, int serializeSameFieldInstance, boolean checkSerializersForSubClasses, boolean writeArraysSingleLined, Map<Class<?>, JsonSerializer<?>> registeredSerializers, boolean provideNulledObjectsAsRealNull) {
         this.format = format;
         this.serializeNulls = serializeNulls;
         this.serializeSameFieldInstance = serializeSameFieldInstance;
@@ -86,6 +91,7 @@ public class SimpleJson implements Json {
         this.writeArraysSingleLined = writeArraysSingleLined;
 
         this.registeredSerializers = registeredSerializers;
+        this.provideNulledObjectsAsRealNull = provideNulledObjectsAsRealNull;
         this.excludeStrategies = new ArrayList<>();
 
 

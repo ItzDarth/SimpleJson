@@ -151,7 +151,7 @@ public class JsonBuilder {
      * Builds this instance
      */
     public Json build() {
-        Json json = new SimpleJson(format, serializeNulls, innerClassSerialization, checkSerializersForSubClasses, writeArraysSingleLined, this.serializers);
+        Json json = new SimpleJson(format, serializeNulls, innerClassSerialization, checkSerializersForSubClasses, writeArraysSingleLined, this.serializers, provideNulledObjectsAsRealNull);
         SimpleProvider.getInstance().setSerializerModule(json);
         return  json;
     }
