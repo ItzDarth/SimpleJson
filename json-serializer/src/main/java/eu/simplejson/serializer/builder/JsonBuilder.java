@@ -35,6 +35,12 @@ public class JsonBuilder {
     private boolean checkSerializersForSubClasses;
 
     /**
+     * If objects that are null should be provided as java-null
+     * or as {@link eu.simplejson.elements.JsonLiteral#NULL}
+     */
+    private boolean provideNulledObjectsAsRealNull;
+
+    /**
      * If primitive arrays should be written like this : [1, 2, 3, 4, 5, 6]
      */
     private boolean writeArraysSingleLined;
@@ -50,6 +56,7 @@ public class JsonBuilder {
         this.writeArraysSingleLined = false;
         this.innerClassSerialization = 2;
         this.checkSerializersForSubClasses = true;
+        this.provideNulledObjectsAsRealNull = true;
         this.serializers = new HashMap<>();
 
         //Setting all providers
@@ -66,6 +73,16 @@ public class JsonBuilder {
      */
     public JsonBuilder innerClassSerialization(int times) {
         this.innerClassSerialization = times;
+        return this;
+    }
+
+    public JsonBuilder provideNulledObjectsAsLiteralNull() {
+        this.provideNulledObjectsAsRealNull = false;
+        return this;
+    }
+
+    public JsonBuilder provideNulledObjectsAsRealNull() {
+        this.provideNulledObjectsAsRealNull = true;
         return this;
     }
 

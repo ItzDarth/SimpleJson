@@ -4,6 +4,7 @@ package eu.simplejson.elements.object;
 import eu.simplejson.api.SimpleProvider;
 import eu.simplejson.api.modules.ParserModule;
 import eu.simplejson.api.modules.SerializerModule;
+import eu.simplejson.elements.JsonLiteral;
 import eu.simplejson.enums.JsonFormat;
 import eu.simplejson.enums.JsonType;
 
@@ -294,7 +295,7 @@ public class JsonObject extends JsonEntity implements Iterable<JsonEntry> {
      */
     public JsonEntity get(String key) {
         int index = this.indexOf(key);
-        return index != -1 ? values.get(index) : null;
+        return index != -1 ? values.get(index) : (SimpleProvider.getInstance().getSerializerModule().isProvideNulledObjectsAsRealNull() ? null : JsonLiteral.NULL);
     }
 
     /**

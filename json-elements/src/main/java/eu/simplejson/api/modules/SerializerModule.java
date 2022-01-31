@@ -16,6 +16,12 @@ public interface SerializerModule {
     boolean isCheckSerializersForSubClasses();
 
     /**
+     * Checks if this json instance
+     * checks for subclasses of serializers
+     */
+    boolean isProvideNulledObjectsAsRealNull();
+
+    /**
      * Checks if nulled values should be serialized
      */
     boolean isSerializeNulls();
